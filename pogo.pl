@@ -70,7 +70,7 @@ askCase(L,N,X):-
   read(X),
   getListCase(X,L,L3),
   getListPions(L3,L2),
-  isControllingCase(L2,N); askCase(L,N,X).
+  isControllingCase(L2,N); write('Cette case est invalide'), nl, askCase(L,N,X).
 
 %------------------------------------------------------------------------
 % Prédicat qui permet d'éxécuter un déplacement
