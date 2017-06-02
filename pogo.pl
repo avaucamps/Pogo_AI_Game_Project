@@ -7,7 +7,7 @@
 % Prédicat qui fait commencer la partie en créant le plateau de jeu
 % L correspond au plateau de jeu
 % -----------------------------------------------------------------------
-start_game() :- create_list(1,L), write(L), tourJoueur1(L).
+start_game(X) :- create_list(1,L), write(L), tourJoueur1(0,L,X).
 
 % -----------------------------------------------------------------------
 % Prédicat qui permet de créer la liste constituant le plateau
@@ -32,7 +32,6 @@ instancier_case(N,[L1,L2]) :- numCase(N,L1), addPionsStart(N,L2).
 % Prédicat qui retourne le numéro d'une case
 % -----------------------------------------------------------------------
 numCase(N,[N]).
-
 %------------------------------------------------------------------------
 % Prédicat qui ajoute les pions sur la plateau au début de la partie
 % N correspond au numéro du joueur : 1 ou 2
@@ -48,7 +47,8 @@ addPionsStart(_,[]).
 % X correspond à la case sur laquelle le joueur veut aller
 % -----------------------------------------------------------------------
 tourJoueur1(1,L,_) :- tourJoueur2(L).
-tourJoueur1(0,L,X) :- read_start_move(X,L,1).
+tourJoueur1(0,L,X) :- read_start_move(X,L,1), read_end_move(X,L,1).
+
 
 % -----------------------------------------------------------------------
 % Prédicat qui permet de demander à un joueur quel mouvement il veut
@@ -59,12 +59,18 @@ tourJoueur1(0,L,X) :- read_start_move(X,L,1).
 % Z2 correspond au nombre de pièces que le joueur peut bouger
 % -----------------------------------------------------------------------
 read_start_move(X,L,N) :-
+  %isCase(X),
+  askCase(L,N,X),
+  infosMove(X,L,N,Z2),
+  print_nbMoves(Z2).
+
+askCase(L,N,X):-
   write('Entrez le numéro de la case de laquelle vous voulez partir:'),
   nl,
   read(X),
-  %isCase(X),
-  infosMove(X,L,N,Z2),
-  print_nbMoves(Z2).
+  getListCase(X,L,L3),
+  getListPions(L3,L2),
+  isControllingCase(L2,N); askCase(L,N,X).
 
 %------------------------------------------------------------------------
 % Prédicat qui permet d'éxécuter un déplacement
@@ -76,9 +82,9 @@ read_start_move(X,L,N) :-
 read_end_move(X,L,Z) :-
   write('Entrez le numéro de la case dans laquelle vous voulez aller:'),
   nl,
-  read(Y).
-  checkMove(X,Y,L,Z).
-  makeMove(X,Y,L).
+  read(Y),
+  checkMove(X,Y,Z).
+  %makeMove(X,Y,L).
   %isCase(X).
 
 %------------------------------------------------------------------------
@@ -95,8 +101,8 @@ isCase(X) :- numlist(1,9,L), member(X,L).
 % N = numéro du joueur
 % Z2 = nombre de pions que le joueur peut bouger
 % -----------------------------------------------------------------------
-infosMove(1,[L|_],N, Z2) :- getListPions(L,L2), isControllingCase(L2,N), numberOfMovablePions(N,L2,Z), normalize(Z,Z2).
-infosMove(X,[_|R],N,Z2) :- X1 is X-1, isOwnCase(X1,R,N,Z2).
+infosMove(1,[L|_],N, Z2) :- getListPions(L,L2), numberOfMovablePions(N,L2,Z), normalize(Z,Z2).
+infosMove(X,[_|R],N,Z2) :- X1 is X-1, infosMove(X1,R,N,Z2).
 
 %------------------------------------------------------------------------
 % Prédicat qui permet de savoir si le joueur controle la case, c'est à
@@ -104,8 +110,7 @@ infosMove(X,[_|R],N,Z2) :- X1 is X-1, isOwnCase(X1,R,N,Z2).
 % L = plateau de jeu
 % N = numéro du joueur et ses pions
 % -----------------------------------------------------------------------
-isControllingCase(L,N) :- last(L,N).
-
+isControllingCase([N|_],N).
 %------------------------------------------------------------------------
 % Prédicat qui permet de récupérer le nombre de pions que l'on peut
 % déplacer
@@ -122,6 +127,9 @@ numberOfMovablePions(N,_,Z) :- numberOfMovablePions(N,[],Z).
 % -----------------------------------------------------------------------
 getListPions([_,B],B).
 
+getListCase(1,[X|_],X).
+getListCase(N,[_|R],X) :- N>1 , N1 is N-1 , getListCase(N1,R,X).
+
 %------------------------------------------------------------------------
 % Prédicat qui permet de mettre le nombre maximum de pions déplaçables à
 % trois
@@ -136,6 +144,20 @@ normalize(_,3).
 print_nbMoves(Z2) :- Z2 > 1, write("Vous pouvez effectuer de 1 a "),write(Z2),write(" deplacements.").
 print_nbMoves(_) :- write("Vous pouvez effectuer 1 deplacement.").
 
+
+isNeighbor([1],[2,4]).
+isNeighbor([2],[1,3,5]).
+isNeighbor([3],[2,6]).
+isNeighbor([4],[1,5,7]).
+isNeighbor([5],[2,4,6,8]).
+isNeighbor([6],[3,5,9]).
+isNeighbor([7],[4,8]).
+isNeighbor([8],[5,7,9]).
+isNeighbor([9],[6,8]).
+
+checkMove(X,Y,_) :- isNeighbor([X],L),member(Y,L).
+checkMove(X,Y,Z) :- Z>0, Z1 is Z-1, isNeighbor([X],L),member(A,L),checkMove(A,Y,Z1).
+checkMove(X,Y,Z):- Z==0, write('C cassee').
 
 
 
