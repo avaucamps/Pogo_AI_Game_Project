@@ -3,13 +3,13 @@
 %
 
 %------------------------------------------------------------------------
-% Prédicat qui fait commencer la partie en créant le plateau de jeu
+% PrÃ©dicat qui fait commencer la partie en crÃ©ant le plateau de jeu
 % L correspond au plateau de jeu
 % -----------------------------------------------------------------------
 start_game(L) :- create_list(1,L), printList(L), tourJoueur1(0,L).
 
 % -----------------------------------------------------------------------
-% Prédicat qui permet d'afficher la liste représentant le plateau de jeu
+% PrÃ©dicat qui permet d'afficher la liste reprÃ©sentant le plateau de jeu
 % sous la forme d'une matrice 3x3
 % -----------------------------------------------------------------------
 printList(L):- afficheLigne1(L),nl,write('-------'),nl,afficheLigne2(L),nl,write('-------'),nl,afficheLigne3(L),nl.
@@ -30,42 +30,42 @@ afficheCase([1|R]):-write('X'),afficheCase(R).
 afficheCase([2|R]):-write('O'),afficheCase(R).
 
 % -----------------------------------------------------------------------
-% Prédicat qui permet de créer la liste constituant le plateau
+% PrÃ©dicat qui permet de crÃ©er la liste constituant le plateau
 % On instancie les 9 cases qui composent le plateau
-% N correspond au numéro de la case, L correspond à la liste contenant
-% d'une part une liste avec le numéro, d'autre part une liste avec les
+% N correspond au numÃ©ro de la case, L correspond Ã  la liste contenant
+% d'une part une liste avec le numÃ©ro, d'autre part une liste avec les
 % pions presents sur cette case
 % -----------------------------------------------------------------------
 create_list(10,[]).
 create_list(N,[L|R]) :- instancier_case(N,L), N1 is N+1, create_list(N1,R).
 
 %------------------------------------------------------------------------
-% Prédicat qui permet d'instancier une case avec son numéro et sa liste
+% PrÃ©dicat qui permet d'instancier une case avec son numÃ©ro et sa liste
 % de pions
-% N correspond au numéro de la case, L à la liste (plateau de jeu)
+% N correspond au numÃ©ro de la case, L Ã  la liste (plateau de jeu)
 %-----------------------------------------------------------------------
 
 instancier_case(N,[L1,L2]) :- numCase(N,L1), addPionsStart(N,L2).
 
 %------------------------------------------------------------------------
-% Prédicat qui retourne le numéro d'une case
+% PrÃ©dicat qui retourne le numÃ©ro d'une case
 % -----------------------------------------------------------------------
 numCase(N,[N]).
 
 %------------------------------------------------------------------------
-% Prédicat qui ajoute les pions sur la plateau au début de la partie
-% N correspond au numéro du joueur : 1 ou 2
+% PrÃ©dicat qui ajoute les pions sur la plateau au dÃ©but de la partie
+% N correspond au numÃ©ro du joueur : 1 ou 2
 % -----------------------------------------------------------------------
 addPionsStart(N,[1,1]) :- N < 4, !.
 addPionsStart(N,[2,2]) :- N > 6, !.
 addPionsStart(_,[]).
 
 %------------------------------------------------------------------------
-% Prédicat qui permet au joueur 1 de réaliser son tour
+% PrÃ©dicat qui permet au joueur 1 de rÃ©aliser son tour
 % Une fois que son tour est fini c'est au tour de l'autre joueur
-% Premier paramètre = tour joué (1) ou pas (0)
-% L correspond à la liste du jeu (plateau)
-% X correspond à la case sur laquelle le joueur veut aller
+% Premier paramÃ¨tre = tour jouÃ© (1) ou pas (0)
+% L correspond Ã  la liste du jeu (plateau)
+% X correspond Ã  la case sur laquelle le joueur veut aller
 % -----------------------------------------------------------------------
 tourJoueur1(1,L) :- printList(L), tourJoueur2(0,L).
 tourJoueur1(0,L) :- read_start_move(X,L,1,Z), read_end_move(X,L,Z,1,L2), tourJoueur1(1,L2).
@@ -74,12 +74,12 @@ tourJoueur2(1,L) :- printList(L), tourJoueur1(0,L).
 tourJoueur2(0,L) :- read_start_move(X,L,2,Z), read_end_move(X,L,Z,2,L2), tourJoueur2(1,L2).
 
 % -----------------------------------------------------------------------
-% Prédicat qui permet de demander à un joueur quel mouvement il veut
-% réaliser, et s'assurer que le mouvement est réalisable.
-% X correspond au numéro de la case de laquelle il veut partir
+% PrÃ©dicat qui permet de demander Ã  un joueur quel mouvement il veut
+% rÃ©aliser, et s'assurer que le mouvement est rÃ©alisable.
+% X correspond au numÃ©ro de la case de laquelle il veut partir
 % L correspond a la liste de jeu (plateau)
-% N correspond au numéro du joueur
-% Z2 correspond au nombre de pièces que le joueur peut bouger
+% N correspond au numÃ©ro du joueur
+% Z2 correspond au nombre de piÃ¨ces que le joueur peut bouger
 % -----------------------------------------------------------------------
 read_start_move(X,L,N,Z2) :-
   %isCase(X),
@@ -88,14 +88,14 @@ read_start_move(X,L,N,Z2) :-
   print_nbMoves(Z2).
 
 % -----------------------------------------------------------------------
-% Prédicat qui demande à un joueur de quelle case il veut partir, et
-% vérifie que cela est possible.
+% PrÃ©dicat qui demande Ã  un joueur de quelle case il veut partir, et
+% vÃ©rifie que cela est possible.
 % L = plateau de jeu
-% N = numéro du joueur
-% X = case de départ
+% N = numÃ©ro du joueur
+% X = case de dÃ©part
 % -----------------------------------------------------------------------
 askCase(L,N,X):-
-  write('Entrez le numéro de la case de laquelle vous voulez partir:'),
+  write('Entrez le numÃ©ro de la case de laquelle vous voulez partir:'),
   nl,
   read(X),
   getListCase(X,L,L3),
@@ -103,19 +103,19 @@ askCase(L,N,X):-
   isControllingCase(L2,N); askCase(L,N,X).
 
 %------------------------------------------------------------------------
-% Prédicat qui permet d'éxécuter un déplacement
-% X = case de départ
-% Y = case d'arrivée
-% L = plateau de jeu au début du tour
-% Z = nombre de déplacements maximum
-% Z2 = nombre de déplacements effectués
-% L2 = plateau de jeu à la fin du tour
+% PrÃ©dicat qui permet d'Ã©xÃ©cuter un dÃ©placement
+% X = case de dÃ©part
+% Y = case d'arrivÃ©e
+% L = plateau de jeu au dÃ©but du tour
+% Z = nombre de dÃ©placements maximum
+% Z2 = nombre de dÃ©placements effectuÃ©s
+% L2 = plateau de jeu Ã  la fin du tour
 % -----------------------------------------------------------------------
 read_end_move(X,L,Z,N,L2) :-
-  write('Entrez le numéro de la case dans laquelle vous voulez aller:'),
+  write('Entrez le numÃ©ro de la case dans laquelle vous voulez aller:'),
   nl,
   read(Y),
-  %Pour avoir le nombre de pions à bouger on prend ce que renvoie le compteur dans checkMove
+  %Pour avoir le nombre de pions Ã  bouger on prend ce que renvoie le compteur dans checkMove
   checkMove(X,Y,Z,Z2),
   %Et on rajoute 1
   Z3 is Z2+1,
@@ -124,52 +124,53 @@ read_end_move(X,L,Z,N,L2) :-
   %isCase(X).
 
 %------------------------------------------------------------------------
-% Prédicat qui permet si le nombre passé en paramètre est un numéro de
+% PrÃ©dicat qui permet si le nombre passÃ© en paramÃ¨tre est un numÃ©ro de
 % case valide
 % -----------------------------------------------------------------------
 isCase(X) :- numlist(1,9,L), member(X,L).
 
 %------------------------------------------------------------------------
-% Prédicat qui permet de savoir si le mouvement envisagé par un joueur
-% est correct et donne des infos sur le futur déplacement
+% PrÃ©dicat qui permet de savoir si le mouvement envisagÃ© par un joueur
+% est correct et donne des infos sur le futur dÃ©placement
 % X = case de laquelle le joueur veut partir
 % L = plateau du jeu
-% N = numéro du joueur
+% N = numÃ©ro du joueur
 % Z2 = nombre de pions que le joueur peut bouger
 % -----------------------------------------------------------------------
 infosMove(1,[L|_],N, Z2) :- getListPions(L,L2), numberOfMovablePions(N,L2,Z), normalize(Z,Z2).
 infosMove(X,[_|R],N,Z2) :- X1 is X-1, infosMove(X1,R,N,Z2).
 
 %------------------------------------------------------------------------
-% Prédicat qui permet de savoir si le joueur controle la case, c'est à
+% PrÃ©dicat qui permet de savoir si le joueur controle la case, c'est Ã 
 % dire que le dernier pion appartient au joueur en question
 % L = plateau de jeu
-% N = numéro du joueur et ses pions
+% N = numÃ©ro du joueur et ses pions
 % -----------------------------------------------------------------------
+isControllingCase([],0).
 isControllingCase([N|_],N).
 
 ownsCase([N|_],N).
 
 
 %------------------------------------------------------------------------
-% Prédicat qui permet de récupérer le nombre de pions que l'on peut
-% déplacer
-% N = numéro du joueur et ses pions
-% Z = nombre de pions déplaçables
+% PrÃ©dicat qui permet de rÃ©cupÃ©rer le nombre de pions que l'on peut
+% dÃ©placer
+% N = numÃ©ro du joueur et ses pions
+% Z = nombre de pions dÃ©plaÃ§ables
 % -----------------------------------------------------------------------
 numberOfMovablePions(_,[],0).
 numberOfMovablePions(N,[N|R],Z) :- numberOfMovablePions(N,R,Z1), !, Z is Z1+1.
 numberOfMovablePions(N,_,Z) :- numberOfMovablePions(N,[],Z).
 
 %------------------------------------------------------------------------
-% Prédicat qui permet de récupérer les pions d'une case à partir de la
-% liste correspondant à la case
+% PrÃ©dicat qui permet de rÃ©cupÃ©rer les pions d'une case Ã  partir de la
+% liste correspondant Ã  la case
 % -----------------------------------------------------------------------
 getListPions([_,B],B).
 
 % -----------------------------------------------------------------------
-% Prédicat qui permet de récupérer la liste d'une case, c'est a dire son
-% numéro et ses pions
+% PrÃ©dicat qui permet de rÃ©cupÃ©rer la liste d'une case, c'est a dire son
+% numÃ©ro et ses pions
 % N = numero de la case
 % X = liste de la case
 % L = plateau de jeu
@@ -178,26 +179,26 @@ getListCase(1,[X|_],X).
 getListCase(N,[_|R],X) :- N>1 , N1 is N-1 , getListCase(N1,R,X).
 
 % -----------------------------------------------------------------------
-% Prédicat qui renvoie la liste contenant juste le numéro de la case
+% PrÃ©dicat qui renvoie la liste contenant juste le numÃ©ro de la case
 % -----------------------------------------------------------------------
 getCase([A,_],A).
 
 %------------------------------------------------------------------------
-% Prédicat qui permet de mettre le nombre maximum de pions déplaçables à
+% PrÃ©dicat qui permet de mettre le nombre maximum de pions dÃ©plaÃ§ables Ã 
 % trois
 % -----------------------------------------------------------------------
 normalize(Z,Z) :- Z < 3.
 normalize(_,3).
 
 %------------------------------------------------------------------------
-% Prédicat qui permet de dire à l'utilisateur combien de mouvements il
+% PrÃ©dicat qui permet de dire Ã  l'utilisateur combien de mouvements il
 % peut effectuer
 % -----------------------------------------------------------------------
 print_nbMoves(Z2) :- Z2 > 1, write("Vous pouvez effectuer de 1 a "),write(Z2),write(" deplacements.").
 print_nbMoves(_) :- write("Vous pouvez effectuer 1 deplacement.").
 
 % -----------------------------------------------------------------------
-% Prédicat qui permet de connaître les voisins directs de chaque case
+% PrÃ©dicat qui permet de connaÃ®tre les voisins directs de chaque case
 % -----------------------------------------------------------------------
 isNeighbor(1,[2,4]).
 isNeighbor(2,[1,3,5]).
@@ -210,66 +211,66 @@ isNeighbor(8,[5,7,9]).
 isNeighbor(9,[6,8]).
 
 % -----------------------------------------------------------------------
-% Prédicat qui permet de vérifier si un mouvement est possible
-% X = case départ
-% Y = case arrivée
-% Z = nombre de déplacement de 1 case possibles
-% Z2 = compteur de déplacements dont la valeur est le nombre de
-% déplacements -1
+% PrÃ©dicat qui permet de vÃ©rifier si un mouvement est possible
+% X = case dÃ©part
+% Y = case arrivÃ©e
+% Z = nombre de dÃ©placement de 1 case possibles
+% Z2 = compteur de dÃ©placements dont la valeur est le nombre de
+% dÃ©placements -1
 % -----------------------------------------------------------------------
 checkMove(X,Y,_,0) :- isNeighbor(X,L),member(Y,L).
 checkMove(X,Y,Z,Z2) :- Z>0, Z1 is Z-1, isNeighbor(X,L),member(A,L),checkMove(A,Y,Z1,Z3), Z2 is Z3+1.
 %checkMove(_,_,Z,_):- Z==0, write('C cassee').
 
 % -----------------------------------------------------------------------
-% Prédicat qui permet d'éxécuter un déplacement
+% PrÃ©dicat qui permet d'Ã©xÃ©cuter un dÃ©placement
 % makeMove(+X,+Y,+Z,+L,?L2).
-% X = case départ
-% Y = case arrivée
-% Z = nombre de pions à bouger
+% X = case dÃ©part
+% Y = case arrivÃ©e
+% Z = nombre de pions Ã  bouger
 % L = plateau de jeu avant tour
-% L2 = plateau de jeu après tour
-% N = numéro du joueur
+% L2 = plateau de jeu aprÃ¨s tour
+% N = numÃ©ro du joueur
 % -----------------------------------------------------------------------
 makeMove(X,Y,Z,L,L2,N) :- getListCase(X,L,L3), getListCase(Y,L,L4), removePionsListCase(L3,Z,L5), addPionsListCase(L4,Z,L6,N), setNewList(X,Y,L,L5,L6,L2).
 
 % -----------------------------------------------------------------------
-% Prédicat qui enlève Z pions d'une liste d'une case et retourne la
+% PrÃ©dicat qui enlÃ¨ve Z pions d'une liste d'une case et retourne la
 % liste sans les Z pions
 % L = liste de la case
-% Z = nombre de pions à enlever
+% Z = nombre de pions Ã  enlever
 % L2 = nouvelle liste
 % -----------------------------------------------------------------------
 removePionsListCase(L,Z,L2) :- getListPions(L,L3), removePions(L3,Z,L4), setListCase(L,L4,L2).
 
 % -----------------------------------------------------------------------
-% Prédicat qui enlève Z pions à une liste de pions L = liste début Z =
+% PrÃ©dicat qui enlÃ¨ve Z pions Ã  une liste de pions L = liste dÃ©but Z =
 % nombre de pions L2 = liste pions fin
 % -----------------------------------------------------------------------
 removePions(L,0,L).
 removePions([_|R], Z, L) :- Z > 0, Z1 is Z-1, removePions(R,Z1,L).
 
 % -----------------------------------------------------------------------
-% Prédicat qui met à jour le nombre de pions d'une liste correspondant à
-% une case L = liste case début
+% PrÃ©dicat qui met Ã  jour le nombre de pions d'une liste correspondant Ã 
+% une case L = liste case dÃ©but
 % L4 = liste pions
 % L2 = nouvelle liste case
 % -----------------------------------------------------------------------
 setListCase([A,_],L4,[A,L4]).
 
 % -----------------------------------------------------------------------
-% Prédicat qui ajoute Z pions à liste d'une case et retourne la liste
+% PrÃ©dicat qui ajoute Z pions Ã  liste d'une case et retourne la liste
 % avec les Z pions en plus
 % L = liste de la case
-% Z = nombre de pions à ajouter
+% Z = nombre de pions Ã  ajouter
 % L2 = nouvelle liste avec les pions
-% N = numéro du joueur
+% N = numÃ©ro du joueur
 % ----------------------------------------------------------------------
 addPionsListCase(L,Z,L2,N) :- getListPions(L,L3), addPions(L3,Z,L4,N), setListCase(L,L4,L2).
 
 % -----------------------------------------------------------------------
-% Prédicat qui ajoute Z pions à une liste de pions
-% L = liste début
+% PrÃ©dicat qui ajoute Z pions Ã  une liste de pions
+% L = liste dÃ©but
 % Z = nombre de pions
 % L2 = liste pions fin
 % N = numero du joueur
@@ -278,14 +279,14 @@ addPions(L,0,L,_).
 addPions(L, Z, [N|R], N) :- Z > 0, Z1 is Z-1, addPions(L,Z1,R,N).
 
 % -----------------------------------------------------------------------
-% Prédicat qui permet de reconstruire le plateau de jeu après un tour en
+% PrÃ©dicat qui permet de reconstruire le plateau de jeu aprÃ¨s un tour en
 % prenant compte des changements
-% X = case départ
-% Y = case arrivée
+% X = case dÃ©part
+% Y = case arrivÃ©e
 % L = plateau de jeu avant tour
-% L2 = liste case départ
-% L3 = liste case arrivée
-% L4 = liste après le tour
+% L2 = liste case dÃ©part
+% L3 = liste case arrivÃ©e
+% L4 = liste aprÃ¨s le tour
 % -----------------------------------------------------------------------
 setNewList(0,0,L,[],[],L).
 setNewList(X,Y,[A|R],L2,L3,[L2|R2]) :- getCase(A,LC), numCase(X,LC),!, setNewList(0,Y,R,[],L3,R2).
@@ -293,9 +294,9 @@ setNewList(X,Y,[A|R],L2,L3,[L3|R2]) :- getCase(A,LC), numCase(Y,LC),!, setNewLis
 setNewList(X,Y,[A|R],L2,L3,[A|R2]) :- setNewList(X,Y,R,L2,L3,R2).
 
 % -----------------------------------------------------------------------
-% Prédicat qui compte le nombre de piles contrôlées par un joueur passé
+% PrÃ©dicat qui compte le nombre de piles contrÃ´lÃ©es par un joueur passÃ©
 % en param nbPilesPlayer(+N,+L,?X).
-% N = numéro du joueur L = plateau de jeu
+% N = numÃ©ro du joueur L = plateau de jeu
 % X = nombre de piles
 % -----------------------------------------------------------------------
 nbPilesPlayer(_,[],0).
@@ -303,7 +304,7 @@ nbPilesPlayer(N,[L|R],X) :- getListPions(L,L2), colorLastPion(L2,N), !, nbPilesP
 nbPilesPlayer(N,[_|R],X) :- nbPilesPlayer(N,R,X).
 
 % ------------------------------------------------------------------------
-% Prédicat qui permet de connaître la couleur du pion sur le dessus
+% PrÃ©dicat qui permet de connaÃ®tre la couleur du pion sur le dessus
 % d'une pile
 % colorLastPion(+L,?C).
 % L = liste des pions
@@ -313,9 +314,9 @@ colorLastPion([],0).
 colorLastPion([X|_],X).
 
 % -----------------------------------------------------------------------
-% Prédicat qui calcul nbCasesIA - nbCasesPlayer pour savoir quel coup
+% PrÃ©dicat qui calcul nbCasesIA - nbCasesPlayer pour savoir quel coup
 % faire
-% Renvoie 10 si l'IA a gagné
+% Renvoie 10 si l'IA a gagnÃ©
 % diffCasesPlayer2(+L,?X).
 % L = plateau de jeu
 % X = nbCasesIA - nbCasesPlayer
@@ -325,79 +326,79 @@ diffCasesPlayer2(L,10) :- nbPilesPlayer(1,L,X), X == 0, !.
 diffCasesPlayer2(L,X) :- nbPilesPlayer(1,L,Y), nbPilesPlayer(2,L,Z), X is Z-Y.
 
 % -----------------------------------------------------------------------
-% Prédicat qui permet de récupérer tous les états du plateau possibles
-% après le coup qui va intervenir
+% PrÃ©dicat qui permet de rÃ©cupÃ©rer tous les Ã©tats du plateau possibles
+% aprÃ¨s le coup qui va intervenir
 % getAllMovesPlayer(+N,+L,?LE).
-% N = numéro du joueur
+% N = numÃ©ro du joueur
 % L = plateau de jeu
-% LE = liste de tous les états possibles
+% LE = liste de tous les Ã©tats possibles
 % -----------------------------------------------------------------------
 getAllMovesPlayer(N,L,LE) :-getCasesPlayer(L,LC,N), getAllMoves(LC,L,LE,N), write(LE).
 
 % -----------------------------------------------------------------------
-% Prédicat qui permet de récupérer la liste des cases contrôlées par le
+% PrÃ©dicat qui permet de rÃ©cupÃ©rer la liste des cases contrÃ´lÃ©es par le
 % joueur N.
 % getCasesPlayer(+L,?L2,+N).
 % L = plateau de jeu
-% L2 = liste des cases contrôlées par le joueur N (case = liste
+% L2 = liste des cases contrÃ´lÃ©es par le joueur N (case = liste
 % comprenant liste num case + liste pions case)
-% N = numéro du joueur
+% N = numÃ©ro du joueur
 % -----------------------------------------------------------------------
 getCasesPlayer([],[],_).
 getCasesPlayer([C|R],[C|R2],N) :- getListPions(C,LP), ownsCase(LP,N),getCasesPlayer(R,R2,N).
 getCasesPlayer([C|R],L2,N) :- getListPions(C,LP), not(ownsCase(LP,N)), getCasesPlayer(R,L2,N).
 
 % ------------------------------------------------------------------------
-% Prédicat qui permet d'avoir tous les états possibles après le prochain
-% tour à partir de la liste des cases contrôlées par le joueur.
+% PrÃ©dicat qui permet d'avoir tous les Ã©tats possibles aprÃ¨s le prochain
+% tour Ã  partir de la liste des cases contrÃ´lÃ©es par le joueur.
 % getAllMoves(+LC,+LP,?LE,+N).
-% LC = liste des cases contrôlées par le joueur
+% LC = liste des cases contrÃ´lÃ©es par le joueur
 % LP = liste correspondant au plateau
-% LE = liste des états possibles
-% N = numéro du joueur
+% LE = liste des Ã©tats possibles
+% N = numÃ©ro du joueur
 % -----------------------------------------------------------------------
 getAllMoves([],_,_,_).
 getAllMoves([C|R],LP,[LE|R],N) :- getCase(C,LC), numCase(NC,LC), getMovesFromCases(NC,L2,N), flatten(L2,L), generateAllStates(NC,L,LP,LE,N), getAllMoves(R,LP,R,N).
 
 % ------------------------------------------------------------------------
-% Prédicat qui permet de générer tous les états possibles d'une case de
-% départ à plusieurs cases d'arrivées
+% PrÃ©dicat qui permet de gÃ©nÃ©rer tous les Ã©tats possibles d'une case de
+% dÃ©part Ã  plusieurs cases d'arrivÃ©es
 % generateAllStates(C,LC,LJ,LJ2,N).
-% C = case de départ
-% LC = liste des cases d'arrivée
+% C = case de dÃ©part
+% LC = liste des cases d'arrivÃ©e
 % LJ = Liste correspondant au plateau
-% LJ2 = liste correspondant aux états possibles à partir de la case de
-% départ et des cases d'arrivées
-% N = numéro du joueur
+% LJ2 = liste correspondant aux Ã©tats possibles Ã  partir de la case de
+% dÃ©part et des cases d'arrivÃ©es
+% N = numÃ©ro du joueur
 % -----------------------------------------------------------------------
 generateAllStates(_,[],_,_,_).
 generateAllStates(C,[C2|R],LJ,[LJ2|R2],N) :- generateState(C,C2,LJ,LJ2,N), write(LJ2), generateAllStates(C,R,LJ,R2,N).
 
 % ------------------------------------------------------------------------
-% Prédicat qui permet de générer l'état possible à partir d'une case
-% de départ et d'une case d'arrivée.
+% PrÃ©dicat qui permet de gÃ©nÃ©rer l'Ã©tat possible Ã  partir d'une case
+% de dÃ©part et d'une case d'arrivÃ©e.
 % generateState(+C,+C2,+LJ,?LJ2,+N).
-% C = case de départ
-% C2 = case arrivée
+% C = case de dÃ©part
+% C2 = case arrivÃ©e
 % LJ = Liste du plateau de jeu
-% LJ2 = liste état suivant
-% N = numéro du joueur
+% LJ2 = liste Ã©tat suivant
+% N = numÃ©ro du joueur
 % -----------------------------------------------------------------------
 generateState(C,C2,LJ,LJ2,N) :- transition(C,C2,NP), makeMove(C,C2,NP,LJ,LJ2,N).
 
 % -----------------------------------------------------------------------
-% Prédicat qui permet de savoir sur quelles cases on peut aller en
-% partant d'une case avec un certain nombre de déplacements N
+% PrÃ©dicat qui permet de savoir sur quelles cases on peut aller en
+% partant d'une case avec un certain nombre de dÃ©placements N
 % getMovesFromCases(+X,?L,+N).
-% X = case de départ
-% L = liste des cases d'arrivée
-% N = nombre de déplacements
+% X = case de dÃ©part
+% L = liste des cases d'arrivÃ©e
+% N = nombre de dÃ©placements
 % -----------------------------------------------------------------------
 getMovesFromCases(X,[L|R],N) :- N>1, findall(Y,transition(X,Y,N),L), N1 is N-1, getMovesFromCases(X,R,N1).
 getMovesFromCases(X,[L],1) :- findall(Y,transition(X,Y,1),L).
 
 % -----------------------------------------------------------------------
-% Tous les déplacements possibles
+% Tous les dÃ©placements possibles
 % -----------------------------------------------------------------------
 transition(3,2,1).
 transition(3,6,1).
@@ -469,3 +470,30 @@ transition(8,6,2).
 transition(8,2,2).
 transition(8,1,3).
 transition(8,3,3).
+
+vide([]).
+
+player1Win(L):- 
+getListCase(1,L,[_,M]),isControllingCase(M,A),(A\=2;vide(A)),
+getListCase(2,L,[_,N]),isControllingCase(N,B),(A\=2;vide(B)),
+getListCase(3,L,[_,O]),isControllingCase(O,C),(A\=2;vide(C)),
+getListCase(4,L,[_,P]),isControllingCase(P,D),(A\=2;vide(D)),
+getListCase(5,L,[_,Q]),isControllingCase(Q,E),(A\=2;vide(E)),
+getListCase(6,L,[_,R]),isControllingCase(R,F),(A\=2;vide(F)),
+getListCase(7,L,[_,S]),isControllingCase(S,G),(A\=2;vide(G)),
+getListCase(8,L,[_,T]),isControllingCase(T,H),(A\=2;vide(H)),
+getListCase(9,L,[_,U]),isControllingCase(U,I),(A\=2;vide(I)),
+write('Joueur 1 GAGNE !').
+
+
+player2Win(L):- 
+getListCase(1,L,[_,M]),isControllingCase(M,A),(A\=1;vide(A)),
+getListCase(2,L,[_,N]),isControllingCase(N,B),(A\=1;vide(B)),
+getListCase(3,L,[_,O]),isControllingCase(O,C),(A\=1;vide(C)),
+getListCase(4,L,[_,P]),isControllingCase(P,D),(A\=1;vide(D)),
+getListCase(5,L,[_,Q]),isControllingCase(Q,E),(A\=1;vide(E)),
+getListCase(6,L,[_,R]),isControllingCase(R,F),(A\=1;vide(F)),
+getListCase(7,L,[_,S]),isControllingCase(S,G),(A\=1;vide(G)),
+getListCase(8,L,[_,T]),isControllingCase(T,H),(A\=1;vide(H)),
+getListCase(9,L,[_,U]),isControllingCase(U,I),(A\=1;vide(I)),
+write('Joueur 2 GAGNE !').
