@@ -146,16 +146,10 @@ infosMove(X,[_|R],N,Z2) :- X1 is X-1, infosMove(X1,R,N,Z2).
 % L = plateau de jeu
 % N = numéro du joueur et ses pions
 % -----------------------------------------------------------------------
-<<<<<<< HEAD
 isControllingCase([N|_],N).
 
 ownsCase([N|_],N).
 
-=======
-isControllingCase([],0).
-isControllingCase([N|_],N).
-
->>>>>>> 3df79cf24d68021484460535c457bc3fca8bbd79
 
 %------------------------------------------------------------------------
 % Prédicat qui permet de récupérer le nombre de pions que l'on peut
@@ -297,15 +291,6 @@ setNewList(0,0,L,[],[],L).
 setNewList(X,Y,[A|R],L2,L3,[L2|R2]) :- getCase(A,LC), numCase(X,LC),!, setNewList(0,Y,R,[],L3,R2).
 setNewList(X,Y,[A|R],L2,L3,[L3|R2]) :- getCase(A,LC), numCase(Y,LC),!, setNewList(X,0,R,L2,[],R2).
 setNewList(X,Y,[A|R],L2,L3,[A|R2]) :- setNewList(X,Y,R,L2,L3,R2).
-<<<<<<< HEAD
-=======
-%setNewList(1,Y,[_|R],L2,L3,[L2|R2]) :- setNewList(0,Y,R,L2,L3,R2).
-%setNewList(X,1,[_|R],L2,L3,[L3|R2]) :- setNewList(X,0,R,L2,L3,R2).
-%setNewList(X,Y,[A|R],L2,L3,[A|R2]) :- X > 1, X1 is X-1, Y > 0, Y1 is Y
-% -1, setNewList(X1,Y1,R,L2,L3,R2). setNewList(-1,Y,[_|R],L2,L3,[L2|R2])
-% :- setNewList(-1,Y,R,L2,L3,R2). setNewList(X,-1,[_|R],L2,L3,[L3|R2]) :-
-% setNewList(X,-1,R,L2,L3,R2).
->>>>>>> 3df79cf24d68021484460535c457bc3fca8bbd79
 
 % -----------------------------------------------------------------------
 % Prédicat qui compte le nombre de piles contrôlées par un joueur passé
@@ -340,7 +325,6 @@ diffCasesPlayer2(L,10) :- nbPilesPlayer(1,L,X), X == 0, !.
 diffCasesPlayer2(L,X) :- nbPilesPlayer(1,L,Y), nbPilesPlayer(2,L,Z), X is Z-Y.
 
 % -----------------------------------------------------------------------
-<<<<<<< HEAD
 % Prédicat qui permet de récupérer tous les états du plateau possibles
 % après le coup qui va intervenir
 % getAllMovesPlayer(+N,+L,?LE).
@@ -362,96 +346,6 @@ getAllMovesPlayer(N,L,LE) :-getCasesPlayer(L,LC,N), getAllMoves(LC,L,LE,N), writ
 getCasesPlayer([],[],_).
 getCasesPlayer([C|R],[C|R2],N) :- getListPions(C,LP), ownsCase(LP,N),getCasesPlayer(R,R2,N).
 getCasesPlayer([C|R],L2,N) :- getListPions(C,LP), not(ownsCase(LP,N)), getCasesPlayer(R,L2,N).
-=======
-% Prédicat qui génère tous les déplacements possibles à partir de la
-% liste des cases passée en paramètre pour un joueur donné
-% getAllMoves(+N,+L,?L2).
-% N = numéro du joueur
-% L = liste des cases contrôlées par le joueur
-% L2 = liste état final
-% -----------------------------------------------------------------------
-getAllMoves(_,[],[]).
-getAllMoves(N,[C|R],[M|R2]) :- getMovesCases(N,C,M), getAllMoves(N,R,R2).
-
-% -----------------------------------------------------------------------
-% Prédicat qui retourne une liste contenant la liste de chaque case
-% contrôlée par le joueur N
-% getAllCasesPlayer(+N,+L,?L2).
-% N = numéro du joueur
-% L = plateau du jeu
-% L2 = liste cases joueur
-% -----------------------------------------------------------------------
-getAllCasesPlayer(_,[],[]).
-getAllCasesPlayer(N,[L|R],[L|R2]) :- getListPions(L,L2), colorLastPion(L2,N), !, getAllCasesPlayer(N,R,R2).
-getAllCasesPlayer(N,[_|R],L2) :- getAllCasesPlayer(N,R,L2).
-
-% -----------------------------------------------------------------------
-% Prédicat qui permet de connaître la liste des mouvements possibles à
-% partir d'une case passée en paramètre
-% getMovesCase(+N,+C,?M).
-% N = numéro du joueur
-% C = liste case contenant le numéro de la case et la liste des pions
-% qu'elle contien
-% M = cases arrivée possible
-% -----------------------------------------------------------------------
-getMovesCases(N,C,C3) :- getCase(C,C2), getListPions(C,P), numberOfMovablePions(N,P,X), normalize(X,X2), getMovesFromCase(C2,C3,X2).
-
-% -----------------------------------------------------------------------
-% Prédicat qui retourne toutes les cases d'arrivée possible à partir
-% d'une case de départ
-% getMovesFromCase(+C,?C2,+X).
-% C = case départ
-% C2 = case arrivée
-% X = nombre de déplacements max possibles
-% -----------------------------------------------------------------------
-getMovesFromCase(C,C2,X) :- X>0, isNeighbor(C,L), member(C2,L).
-getMovesFromCase(C,C2,X) :- X>0, X1 is X-1, isNeighbor(C,L),member(A,L),getMovesFromCase(A,C2,X1).
-
-
-
-
-
-
-
-
-% -----------------------------------------------------------------------
-% Prédicat qui permet de créer une liste contenant tous les déplacements
-% possibles à partir de la liste des cases que contrôle le joueur N
-% getListMoves(+N,+L,?L2,+I).
-% N = numéro du joueur
-% L = liste des cases contrôlées par le joueur
-% L2 = liste des déplacements possibles
-% I = numéro de la case d'arrivée
-% Principe : pour chaque numéro de case on cherche pour chaque autre
-% case si le déplacement est possible
-% ----------------------------------------------------------------------
-getListMoves(_,_,_,10).
-
-% Si le num de la case d'arrivée n'est pas égale au num de la case
-% d'arrivée et que le mouvement est correct, alors en enregistre le
-% déplacement et on refait le test pour la case d'arrivée suivante
-getListMoves(N,[C|LP],[L2|R],I) :- write("  "), numCase(NC,C), not(NC == I), getListPions([C|LP],LP2), numberOfMovablePions(N,LP2,Z), write(NC), write(I), write(Z), isMoveCorrect(NC,I,Z), write(" "), write(I), buildList(NC,I,L2), I1 is I+1, getListMoves(N,[C|LP],[L2|R],I1).
-
-% Si la case d'arrivée est égale à la case de départ on test le
-% mouvement pour la case d'arrivée suivante
-getListMoves(N,[C|LP],L2,I) :- numCase(NC,C), NC == I, I1 is I+1, getListMoves(N,[C|LP],L2,I1).
-
-%Si la case d'arrivée n'est pas égale au num de la case
-% d'arrivée et que le mouvement n'est pas correct, on refait le test pour la case d'arrivée suivante
-getListMoves(N,[C|LP],L2,I) :- numCase(NC,C), not(NC == I), getListPions([C|LP],LP2), numberOfMovablePions(N,LP2,Z), not(isMoveCorrect(NC,I,Z)), I1 is I+1, getListMoves(N,[C|LP],L2,I1).
-
-buildList(C,I,[C,I]).
-
-
-isMoveCorrect(X,Y,_) :- isNeighbor(X,L),member(Y,L).
-isMoveCorrect(X,Y,Z) :- Z>0, Z1 is Z-1, isNeighbor(X,L),member(A,L),isMoveCorrect(A,Y,Z1).
-
-
-
-
-
-
->>>>>>> 3df79cf24d68021484460535c457bc3fca8bbd79
 
 % ------------------------------------------------------------------------
 % Prédicat qui permet d'avoir tous les états possibles après le prochain
@@ -536,7 +430,6 @@ transition(4,6,2).
 transition(4,3,3).
 transition(4,9,3).
 
-<<<<<<< HEAD
 transition(5,2,1).
 transition(5,4,1).
 transition(5,6,1).
@@ -553,19 +446,6 @@ transition(6,8,2).
 transition(6,4,2).
 transition(6,7,3).
 transition(6,1,3).
-=======
-player1Gagne(L):- getListCase(1,L,[_,X]),isControllingCase(X,A),A\=2,!,
-getListCase(2,L,[_,X]),isControllingCase(X,B),B\=2,!,
-getListCase(3,L,[_,X]),isControllingCase(X,C),C\=2,!,
-  write('test'),write(X),
-getListCase(4,L,[_,X]), write(X),isControllingCase(X,D),D\=2,!,
-getListCase(5,L,[_,X]),isControllingCase(X,E),E\=2,!,
-getListCase(6,L,[_,X]),isControllingCase(X,F),F\=2,!,
-getListCase(7,L,[_,X]),isControllingCase(X,G),G\=2,!,
-getListCase(8,L,[_,X]),isControllingCase(X,H),H\=2,!,
-getListCase(9,L,[_,X]),isControllingCase(X,I),I\=2,!,
-write('Joueur 1 GAGNE !').
->>>>>>> 3df79cf24d68021484460535c457bc3fca8bbd79
 
 transition(7,8,1).
 transition(7,4,1).
