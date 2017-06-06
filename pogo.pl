@@ -296,7 +296,8 @@ setNewList(X,Y,[A|R],L2,L3,[A|R2]) :- setNewList(X,Y,R,L2,L3,R2).
 % -----------------------------------------------------------------------
 % Prédicat qui compte le nombre de piles contrôlées par un joueur passé
 % en param nbPilesPlayer(+N,+L,?X).
-% N = numéro du joueur L = plateau de jeu
+% N = numéro du joueur
+% L = plateau de jeu
 % X = nombre de piles
 % -----------------------------------------------------------------------
 nbPilesPlayer(_,[],0).
@@ -316,15 +317,34 @@ colorLastPion([X|_],X).
 % -----------------------------------------------------------------------
 % Prédicat qui calcul nbCasesIA - nbCasesPlayer pour savoir quel coup
 % faire
-% Renvoie 10 si l'IA a gagné
-% diffCasesPlayer2(+L,?X).
+% Renvoie 10 si le joueur N a gagné
+% diffCasesPlayer2(+N,+L,?X).
+% N = num�ro du joueur
 % L = plateau de jeu
 % X = nbCasesIA - nbCasesPlayer
 % -----------------------------------------------------------------------
-diffCasesPlayer2([],_).
-diffCasesPlayer2(L,10) :- nbPilesPlayer(1,L,X), X == 0, !.
-diffCasesPlayer2(L,X) :- nbPilesPlayer(1,L,Y), nbPilesPlayer(2,L,Z), X is Z-Y.
+diffCasesPlayer(_,[],_).
+diffCasesPlayer(2,L,10) :- nbPilesPlayer(1,L,X), X == 0, !.
+diffCasesPlayer(1,L,10) :- nbPilesPlayer(2,L,X), X == 0, !.
+diffCasesPlayer(2,L,-10) :- nbPilesPlayer(2,L,X), X == 0, !.
+diffCasesPlayer(1,L,-10) :- nbPilesPlayer(1,L,X), X == 0, !.
+diffCasesPlayer(1,L,X) :- nbPilesPlayer(1,L,Y), nbPilesPlayer(2,L,Z), X is Y-Z.
+diffCasesPlayer(2,L,X) :- nbPilesPlayer(2,L,Z), nbPilesPlayer(1,L,Y), X is Z-Y.
 
+% -----------------------------------------------------------------------
+% Pr�dicat qui permet de calculer les heuristiques pour le joueur 2 pour
+% chaque �tat de la liste des �tats possibles
+% calculateHeurisitics(+N,+LE,?LH)
+% N = num�ro du joueur
+% LE = liste des �tats
+% LH = liste des
+% heuristiques
+% -----------------------------------------------------------------------
+calculateHeuristics(_,[],[]).
+calculateHeuristics(N,[L|R],[L2|R2]) :- calculateHeuristicsList(N,L,L2), calculateHeuristics(N,R,R2).
+
+calculateHeuristicsList(_,[],[]).
+calculateHeuristicsList(N,[L|R],[H|R2]) :- diffCasesPlayer(N,L,H), calculateHeuristicsList(N,R,R2).
 % -----------------------------------------------------------------------
 % Prédicat qui permet de récupérer tous les états du plateau possibles
 % après le coup qui va intervenir
@@ -333,7 +353,7 @@ diffCasesPlayer2(L,X) :- nbPilesPlayer(1,L,Y), nbPilesPlayer(2,L,Z), X is Z-Y.
 % L = plateau de jeu
 % LE = liste de tous les états possibles
 % -----------------------------------------------------------------------
-getAllMovesPlayer(N,L,LE) :-getCasesPlayer(L,LC,N), getAllMoves(LC,L,LE,N), write(LE).
+getAllMovesPlayer(N,L,LH2) :-getCasesPlayer(L,LC,N), getAllMoves(LC,L,LE,N), calculateHeuristics(N,LE,LH), flatten(LH,LH2), write(LH2).
 
 % -----------------------------------------------------------------------
 % Prédicat qui permet de récupérer la liste des cases contrôlées par le
@@ -357,8 +377,8 @@ getCasesPlayer([C|R],L2,N) :- getListPions(C,LP), not(ownsCase(LP,N)), getCasesP
 % LE = liste des états possibles
 % N = numéro du joueur
 % -----------------------------------------------------------------------
-getAllMoves([],_,_,_).
-getAllMoves([C|R],LP,[LE|R],N) :- getCase(C,LC), numCase(NC,LC), getMovesFromCases(NC,L2,N), flatten(L2,L), generateAllStates(NC,L,LP,LE,N), getAllMoves(R,LP,R,N).
+getAllMoves([],_,[],_).
+getAllMoves([C|R],LP,[LE|R2],N) :- getCase(C,LC), numCase(NC,LC), getListPions(C,LP2), numberOfMovablePions(N,LP2,Z), getMovesFromCases(NC,L2,Z), flatten(L2,L), generateAllStates(NC,L,LP,LE,N), getAllMoves(R,LP,R2,N).
 
 % ------------------------------------------------------------------------
 % Prédicat qui permet de générer tous les états possibles d'une case de
@@ -372,8 +392,7 @@ getAllMoves([C|R],LP,[LE|R],N) :- getCase(C,LC), numCase(NC,LC), getMovesFromCas
 % N = numéro du joueur
 % -----------------------------------------------------------------------
 generateAllStates(_,[],_,_,_).
-generateAllStates(C,[C2|R],LJ,[LJ2|R2],N) :- generateState(C,C2,LJ,LJ2,N), write(LJ2), generateAllStates(C,R,LJ,R2,N).
-
+generateAllStates(C,[C2|R],LJ,[LJ2|R2],N) :- generateState(C,C2,LJ,LJ2,N), generateAllStates(C,R,LJ,R2,N).
 % ------------------------------------------------------------------------
 % Prédicat qui permet de générer l'état possible à partir d'une case
 % de départ et d'une case d'arrivée.
@@ -473,7 +492,7 @@ transition(8,3,3).
 
 vide([]).
 
-player1Win(L):- 
+player1Win(L):-
 getListCase(1,L,[_,M]),isControllingCase(M,A),(A\=2;vide(A)),
 getListCase(2,L,[_,N]),isControllingCase(N,B),(A\=2;vide(B)),
 getListCase(3,L,[_,O]),isControllingCase(O,C),(A\=2;vide(C)),
@@ -486,7 +505,7 @@ getListCase(9,L,[_,U]),isControllingCase(U,I),(A\=2;vide(I)),
 write('Joueur 1 GAGNE !').
 
 
-player2Win(L):- 
+player2Win(L):-
 getListCase(1,L,[_,M]),isControllingCase(M,A),(A\=1;vide(A)),
 getListCase(2,L,[_,N]),isControllingCase(N,B),(A\=1;vide(B)),
 getListCase(3,L,[_,O]),isControllingCase(O,C),(A\=1;vide(C)),
