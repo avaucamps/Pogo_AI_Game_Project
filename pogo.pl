@@ -6,7 +6,28 @@
 % Prédicat qui fait commencer la partie en créant le plateau de jeu
 % L correspond au plateau de jeu
 % -----------------------------------------------------------------------
-start_game(L) :- create_list(1,L), write(L), tourJoueur1(0,L).
+start_game(L) :- create_list(1,L), printList(L), tourJoueur1(0,L).
+
+% -----------------------------------------------------------------------
+% Prédicat qui permet d'afficher la liste représentant le plateau de jeu
+% sous la forme d'une matrice 3x3
+% -----------------------------------------------------------------------
+printList(L):- afficheLigne1(L),nl,write('-------'),nl,afficheLigne2(L),nl,write('-------'),nl,afficheLigne3(L),nl.
+afficheLigne1(L):- getListCase(1,L,[_,X]),afficheCase(X),write(' | '),
+  getListCase(2,L,[_,Y]),afficheCase(Y),write(' | '),
+  getListCase(3,L,[_,Z]),afficheCase(Z).
+
+afficheLigne2(L):- getListCase(4,L,[_,X]),afficheCase(X),write(' | '),
+  getListCase(5,L,[_,Y]),afficheCase(Y),write(' | '),
+  getListCase(6,L,[_,Z]),afficheCase(Z).
+
+afficheLigne3(L):- getListCase(7,L,[_,X]),afficheCase(X),write(' | '),
+  getListCase(8,L,[_,Y]),afficheCase(Y),write(' | '),
+  getListCase(9,L,[_,Z]),afficheCase(Z).
+
+afficheCase([]).
+afficheCase([1|R]):-write('X'),afficheCase(R).
+afficheCase([2|R]):-write('O'),afficheCase(R).
 
 % -----------------------------------------------------------------------
 % Prédicat qui permet de créer la liste constituant le plateau
@@ -46,10 +67,10 @@ addPionsStart(_,[]).
 % L correspond à la liste du jeu (plateau)
 % X correspond à la case sur laquelle le joueur veut aller
 % -----------------------------------------------------------------------
-tourJoueur1(1,L) :- write(L), tourJoueur2(0,L).
+tourJoueur1(1,L) :- printList(L), tourJoueur2(0,L).
 tourJoueur1(0,L) :- read_start_move(X,L,1,Z), read_end_move(X,L,Z,1,L2), tourJoueur1(1,L2).
 
-tourJoueur2(1,L) :- write(L), tourJoueur1(0,L).
+tourJoueur2(1,L) :- printList(L), tourJoueur1(0,L).
 tourJoueur2(0,L) :- read_start_move(X,L,2,Z), read_end_move(X,L,Z,2,L2), tourJoueur2(1,L2).
 
 % -----------------------------------------------------------------------
@@ -125,7 +146,9 @@ infosMove(X,[_|R],N,Z2) :- X1 is X-1, infosMove(X1,R,N,Z2).
 % L = plateau de jeu
 % N = numéro du joueur et ses pions
 % -----------------------------------------------------------------------
+isControllingCase([],0).
 isControllingCase([N|_],N).
+
 
 %------------------------------------------------------------------------
 % Prédicat qui permet de récupérer le nombre de pions que l'on peut
@@ -273,3 +296,140 @@ setNewList(X,Y,[A|R],L2,L3,[A|R2]) :- setNewList(X,Y,R,L2,L3,R2).
 % -1, setNewList(X1,Y1,R,L2,L3,R2). setNewList(-1,Y,[_|R],L2,L3,[L2|R2])
 % :- setNewList(-1,Y,R,L2,L3,R2). setNewList(X,-1,[_|R],L2,L3,[L3|R2]) :-
 % setNewList(X,-1,R,L2,L3,R2).
+
+% -----------------------------------------------------------------------
+% Prédicat qui compte le nombre de piles contrôlées par un joueur passé
+% en param nbPilesPlayer(+N,+L,?X).
+% N = numéro du joueur L = plateau de jeu
+% X = nombre de piles
+% -----------------------------------------------------------------------
+nbPilesPlayer(_,[],0).
+nbPilesPlayer(N,[L|R],X) :- getListPions(L,L2), colorLastPion(L2,N), !, nbPilesPlayer(N,R,X1), X is X1+1.
+nbPilesPlayer(N,[_|R],X) :- nbPilesPlayer(N,R,X).
+
+% ------------------------------------------------------------------------
+% Prédicat qui permet de connaître la couleur du pion sur le dessus
+% d'une pile
+% colorLastPion(+L,?C).
+% L = liste des pions
+% C = 1 pour couleur joueur 1, 2 pour couleur joueur 2, 0 si liste vide
+% -----------------------------------------------------------------------
+colorLastPion([],0).
+colorLastPion([X|_],X).
+
+% -----------------------------------------------------------------------
+% Prédicat qui calcul nbCasesIA - nbCasesPlayer pour savoir quel coup
+% faire
+% Renvoie 10 si l'IA a gagné
+% diffCasesPlayer2(+L,?X).
+% L = plateau de jeu
+% X = nbCasesIA - nbCasesPlayer
+% -----------------------------------------------------------------------
+diffCasesPlayer2([],_).
+diffCasesPlayer2(L,10) :- nbPilesPlayer(1,L,X), X == 0, !.
+diffCasesPlayer2(L,X) :- nbPilesPlayer(1,L,Y), nbPilesPlayer(2,L,Z), X is Z-Y.
+
+% -----------------------------------------------------------------------
+% Prédicat qui génère tous les déplacements possibles à partir de la
+% liste des cases passée en paramètre pour un joueur donné
+% getAllMoves(+N,+L,?L2).
+% N = numéro du joueur
+% L = liste des cases contrôlées par le joueur
+% L2 = liste état final
+% -----------------------------------------------------------------------
+getAllMoves(_,[],[]).
+getAllMoves(N,[C|R],[M|R2]) :- getMovesCases(N,C,M), getAllMoves(N,R,R2).
+
+% -----------------------------------------------------------------------
+% Prédicat qui retourne une liste contenant la liste de chaque case
+% contrôlée par le joueur N
+% getAllCasesPlayer(+N,+L,?L2).
+% N = numéro du joueur
+% L = plateau du jeu
+% L2 = liste cases joueur
+% -----------------------------------------------------------------------
+getAllCasesPlayer(_,[],[]).
+getAllCasesPlayer(N,[L|R],[L|R2]) :- getListPions(L,L2), colorLastPion(L2,N), !, getAllCasesPlayer(N,R,R2).
+getAllCasesPlayer(N,[_|R],L2) :- getAllCasesPlayer(N,R,L2).
+
+% -----------------------------------------------------------------------
+% Prédicat qui permet de connaître la liste des mouvements possibles à
+% partir d'une case passée en paramètre
+% getMovesCase(+N,+C,?M).
+% N = numéro du joueur
+% C = liste case contenant le numéro de la case et la liste des pions
+% qu'elle contien
+% M = cases arrivée possible
+% -----------------------------------------------------------------------
+getMovesCases(N,C,C3) :- getCase(C,C2), getListPions(C,P), numberOfMovablePions(N,P,X), normalize(X,X2), getMovesFromCase(C2,C3,X2).
+
+% -----------------------------------------------------------------------
+% Prédicat qui retourne toutes les cases d'arrivée possible à partir
+% d'une case de départ
+% getMovesFromCase(+C,?C2,+X).
+% C = case départ
+% C2 = case arrivée
+% X = nombre de déplacements max possibles
+% -----------------------------------------------------------------------
+getMovesFromCase(C,C2,X) :- X>0, isNeighbor(C,L), member(C2,L).
+getMovesFromCase(C,C2,X) :- X>0, X1 is X-1, isNeighbor(C,L),member(A,L),getMovesFromCase(A,C2,X1).
+
+
+
+
+
+
+
+
+% -----------------------------------------------------------------------
+% Prédicat qui permet de créer une liste contenant tous les déplacements
+% possibles à partir de la liste des cases que contrôle le joueur N
+% getListMoves(+N,+L,?L2,+I).
+% N = numéro du joueur
+% L = liste des cases contrôlées par le joueur
+% L2 = liste des déplacements possibles
+% I = numéro de la case d'arrivée
+% Principe : pour chaque numéro de case on cherche pour chaque autre
+% case si le déplacement est possible
+% ----------------------------------------------------------------------
+getListMoves(_,_,_,10).
+
+% Si le num de la case d'arrivée n'est pas égale au num de la case
+% d'arrivée et que le mouvement est correct, alors en enregistre le
+% déplacement et on refait le test pour la case d'arrivée suivante
+getListMoves(N,[C|LP],[L2|R],I) :- write("  "), numCase(NC,C), not(NC == I), getListPions([C|LP],LP2), numberOfMovablePions(N,LP2,Z), write(NC), write(I), write(Z), isMoveCorrect(NC,I,Z), write(" "), write(I), buildList(NC,I,L2), I1 is I+1, getListMoves(N,[C|LP],[L2|R],I1).
+
+% Si la case d'arrivée est égale à la case de départ on test le
+% mouvement pour la case d'arrivée suivante
+getListMoves(N,[C|LP],L2,I) :- numCase(NC,C), NC == I, I1 is I+1, getListMoves(N,[C|LP],L2,I1).
+
+%Si la case d'arrivée n'est pas égale au num de la case
+% d'arrivée et que le mouvement n'est pas correct, on refait le test pour la case d'arrivée suivante
+getListMoves(N,[C|LP],L2,I) :- numCase(NC,C), not(NC == I), getListPions([C|LP],LP2), numberOfMovablePions(N,LP2,Z), not(isMoveCorrect(NC,I,Z)), I1 is I+1, getListMoves(N,[C|LP],L2,I1).
+
+buildList(C,I,[C,I]).
+
+
+isMoveCorrect(X,Y,_) :- isNeighbor(X,L),member(Y,L).
+isMoveCorrect(X,Y,Z) :- Z>0, Z1 is Z-1, isNeighbor(X,L),member(A,L),isMoveCorrect(A,Y,Z1).
+
+
+
+
+
+
+
+
+
+player1Gagne(L):- getListCase(1,L,[_,X]),isControllingCase(X,A),A\=2,!,
+getListCase(2,L,[_,X]),isControllingCase(X,B),B\=2,!,
+getListCase(3,L,[_,X]),isControllingCase(X,C),C\=2,!,
+  write('test'),write(X),
+getListCase(4,L,[_,X]), write(X),isControllingCase(X,D),D\=2,!,
+getListCase(5,L,[_,X]),isControllingCase(X,E),E\=2,!,
+getListCase(6,L,[_,X]),isControllingCase(X,F),F\=2,!,
+getListCase(7,L,[_,X]),isControllingCase(X,G),G\=2,!,
+getListCase(8,L,[_,X]),isControllingCase(X,H),H\=2,!,
+getListCase(9,L,[_,X]),isControllingCase(X,I),I\=2,!,
+write('Joueur 1 GAGNE !').
+
