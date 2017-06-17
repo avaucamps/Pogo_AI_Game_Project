@@ -1,5 +1,6 @@
 % Test :
-% [[[1],[1,1]],[[2],[1,1]],[[3],[1,1]],[[4],[]],[[5],[]],[[6],[]],[[7],[2,2]],[[8],[2,2]],[[9],[2,2]]]
+% [[[1],[1,1]],[[2],[1,1]],[[3],[1,1]],[[4],[]],[[5],[]],[[6],[]],[[7],[2%,2]],[[8],[2,2]],[[9],[2,2]]]
+%
 %
 :- use_module(library(clpfd)).
 :- consult('transitions.pl').
@@ -8,9 +9,9 @@
 %Jeu utilisateur1 vs utilisateur2
 pogo(0) :- start_game_pvp.
 %Jeu utilisateur vs IA
-pogo(1) :- start_game.
+pogo(1,AILevel) :- start_game(AILevel).
 %Jeu IA vs IA
-pogo(2) :- start_game_ia.
+pogoiaia(2,AI1Level,AI2Level) :- start_game_ia(AI1Level,AI2Level).
 
 %------------------------------------------------------------------------
 % Predicat qui fait commencer la partie en creant le plateau de jeu
@@ -18,11 +19,11 @@ pogo(2) :- start_game_ia.
 % start_game(?L).
 % L = plateau de jeu
 % -----------------------------------------------------------------------
-start_game :- create_list(1,L), printList(L), tourJoueur1(0,L).
+start_game(LevelAI) :- create_list(1,L), printList(L), tourJoueur1(0,L,LevelAI).
 
 % Predicat similaire au precedent permettant de demarrer une partie ia
 % contre ia
-start_game_ia :- create_list(1,L), printList(L), tourJoueur1IA(0,L).
+start_game_ia(Level1,Level2) :- create_list(1,L), printList(L), tourJoueur1IA(0,L,Level1,Level2).
 
 % Predicat similaire aux precedents permettant de demarrer une partie
 % player vs player
@@ -91,34 +92,43 @@ tourJoueur2PVP(0,L) :- write("Tour joueur 2 : "), nl, read_start_move(X,L,2), re
 %------------------------------------------------------------------------
 % Predicats qui permettent de gerer les tours lors d'un match joueur vs
 % IA
-% tourJoueur(+N,+L).
+% tourJoueur(+N,+L,+Level2).
 % N = etat du tour -> 0 si pas termine
 %                  -> 1 si termine
 % L = liste representant le plateau de jeu
+% Level2 = niveau de l'intelligence artificielle
 % -----------------------------------------------------------------------
-tourJoueur1(1,L) :- player1Win(L),!, nl, play.
-tourJoueur1(1,L) :- printList(L), tourJoueur2(0,L).
-tourJoueur1(0,L) :- write("Tour joueur 1 : "), nl, read_start_move(X,L,1), read_end_move(X,L,L2), tourJoueur1(1,L2).
+tourJoueur1(1,L,_) :- player1Win(L),!, nl, play.
+tourJoueur1(1,L,Level2) :- printList(L), tourJoueur2(0,L,Level2).
+tourJoueur1(0,L,Level2) :- write("Tour joueur 1 : "), nl, read_start_move(X,L,1), read_end_move(X,L,L2), tourJoueur1(1,L2,Level2).
 
-tourJoueur2(1,L) :- player2Win(L),!, nl, play.
-tourJoueur2(1,L) :- printList(L), tourJoueur1(0,L).
-tourJoueur2(0,L) :- write("Tour joueur 2 : "), nl, aiPlay(2,L,L2), tourJoueur2(1,L2).
+tourJoueur2(1,L,_) :- player2Win(L),!, nl, play.
+tourJoueur2(1,L,Level2) :- printList(L), tourJoueur1(0,L,Level2).
+tourJoueur2(0,L,1) :- write("Tour joueur 2 : "), nl, aiPlayLvl1(2,L,L2), tourJoueur2(1,L2,1).
+tourJoueur2(0,L,2) :- write("Tour joueur 2 : "), nl, aiPlayLvl2(2,L,L2), tourJoueur2(1,L2,2).
+tourJoueur2(0,L,3) :- write("Tour joueur 2 : "), nl, aiPlayLvl3(2,L,L2), tourJoueur2(1,L2,3).
 
 %------------------------------------------------------------------------
 % Predicats qui permettent de gerer les tours lors d'un match ia vs
 % IA
-% tourJoueur(+N,+L).
+% tourJoueur(+N,+L,+Level1,+Level2).
 % N = etat du tour -> 0 si pas termine
 %                  -> 1 si termine
 % L = liste representant le plateau de jeu
+% Level1 = niveau de l'intelligence artificielle 1 (joueur 1)
+% Level2 = niveau de l'intelligence artificielle 2 (joueur 2)
 % -----------------------------------------------------------------------
-tourJoueur1IA(1,L) :- player1Win(L),!, nl, play.
-tourJoueur1IA(1,L) :- printList(L), tourJoueur2IA(0,L).
-tourJoueur1IA(0,L) :- write("Tour joueur 1 : "), nl, aiPlay(1,L,L2), tourJoueur1IA(1,L2).
+tourJoueur1IA(1,L,_,_) :- player1Win(L),!, nl, play.
+tourJoueur1IA(1,L,Level1,Level2) :- printList(L), tourJoueur2IA(0,L,Level1,Level2).
+tourJoueur1IA(0,L,1,Level2) :- write("Tour joueur 1 : "), nl, aiPlayLvl1(1,L,L2), tourJoueur1IA(1,L2,1,Level2).
+tourJoueur1IA(0,L,2,Level2) :- write("Tour joueur 1 : "), nl, aiPlayLvl2(1,L,L2), tourJoueur1IA(1,L2,2,Level2).
+tourJoueur1IA(0,L,3,Level2) :- write("Tour joueur 1 : "), nl, aiPlayLvl3(1,L,L2), tourJoueur1IA(1,L2,3,Level2).
 
-tourJoueur2IA(1,L) :- player2Win(L),!, nl, play.
-tourJoueur2IA(1,L) :- printList(L), tourJoueur1IA(0,L).
-tourJoueur2IA(0,L) :- write("Tour joueur 2 : "), nl, aiPlay(2,L,L2), tourJoueur2IA(1,L2).
+tourJoueur2IA(1,L,_,_) :- player2Win(L),!, nl, play.
+tourJoueur2IA(1,L,Level1,Level2) :- printList(L), tourJoueur1IA(0,L,Level1,Level2).
+tourJoueur2IA(0,L,Level1,1) :- write("Tour joueur 2 : "), nl, aiPlayLvl1(2,L,L2), tourJoueur2IA(1,L2,Level1,1).
+tourJoueur2IA(0,L,Level1,2) :- write("Tour joueur 2 : "), nl, aiPlayLvl2(2,L,L2), tourJoueur2IA(1,L2,Level1,2).
+tourJoueur2IA(0,L,Level1,3) :- write("Tour joueur 2 : "), nl, aiPlayLvl3(2,L,L2), tourJoueur2IA(1,L2,Level1,3).
 
 % -----------------------------------------------------------------------
 % Predicat qui permet de demander a un joueur quel mouvement il veut
@@ -130,7 +140,6 @@ tourJoueur2IA(0,L) :- write("Tour joueur 2 : "), nl, aiPlay(2,L,L2), tourJoueur2
 % Z = nombre de pieces que le joueur peut bouger
 % -----------------------------------------------------------------------
 read_start_move(X,L,N) :-
-  %isCase(X),
   askCase(L,N,X),
   infosMove(X,L,N,Z2),
   print_nbMoves(Z2).
@@ -168,7 +177,6 @@ read_end_move(X,L,L2) :-
   %Pour avoir le nombre de pions a  bouger on prend ce que renvoie le predicat transition
   transition(X,Y,Z2),
   makeMove(X,Y,Z2,L,L2).
-  %isCase(X).
 
 %------------------------------------------------------------------------
 % Predicat qui permet de savoir si le nombre passe en parametre est un
@@ -214,7 +222,6 @@ ownsCase([N|_],N).
 % -----------------------------------------------------------------------
 numberOfMovablePions(_,[],0).
 numberOfMovablePions(N,[_|R],Z) :- numberOfMovablePions(N,R,Z1), !, Z is Z1+1.
-%numberOfMovablePions(N,_,Z) :- numberOfMovablePions(N,[],Z).
 
 %------------------------------------------------------------------------
 % Predicat qui permet de recuperer les pions d'une case a partir de
@@ -249,21 +256,6 @@ normalize(Z,Z) :- Z < 3.
 normalize(_,3).
 
 % -----------------------------------------------------------------------
-% Predicat qui permet de verifier si un mouvement est possible
-% checkMove(+X,+Y,+Z,?Z2).
-% X = case depart
-% Y = case arrivee
-% Z = nombre de deplacements de 1 case possibles
-% Z2 = compteur de deplacements dont la valeur est le nombre de
-% deplacements -1
-% -----------------------------------------------------------------------
-%checkMove(X,Y,_,0) :- isNeighbor(X,L),member(Y,L).
-% checkMove(X,Y,Z,Z2) :- Z>0, Z1 is Z-1,
-% isNeighbor(X,L),member(A,L),checkMove(A,Y,Z1,Z3), Z2 is Z3+1.
-% checkMove(_,_,Z,_):- Z==0, write('C cassee').
-checkMove(X,Y,Z) :- transition(X,Y,Z).
-
-% -----------------------------------------------------------------------
 % Predicat qui permet d'executer un deplacement
 % makeMove(+X,+Y,+Z,+L,?L2).
 % X = case depart
@@ -271,95 +263,25 @@ checkMove(X,Y,Z) :- transition(X,Y,Z).
 % Z = nombre de pions a bouger
 % L = plateau de jeu avant tour
 % L2 = plateau de jeu apres tour
-% N = numero du joueur
 % -----------------------------------------------------------------------
-% makeMove(X,Y,Z,L,L2,N) :- getListCase(X,L,L3), getListCase(Y,L,L4),
-% addPionsListCase2(L3,L4,L5), removePionsListCase(L3,Z,L5)
-% ,setNewList(X,Y,L,L5,L6,L2).
-
 makeMove(X,Y,Z,L,L2) :- getListCase(X,L,ListeCaseX), getListCase(Y,L,ListeCaseY) , getPions(ListeCaseX,Z,ListePionsAdd), getListPions(ListeCaseX,ListePionsX), removePions(ListePionsX,Z,ListeCaseXRemoved), newListeCase(X,ListeCaseXRemoved,NewListeCaseX), getListPions(ListeCaseY,ListePionsY), addPions(ListePionsY,ListePionsAdd,ListePionsCaseYAdded),newListeCase(Y,ListePionsCaseYAdded,L5), setNewList(X,Y,L,NewListeCaseX,L5,L2).
 
+% Predicat qui permet de creer une nouvelle 'liste case' à partir du
+% numero de la case et de la liste de ses pions
 newListeCase(N,L,[[N],L]).
 
+%Predicat qui permet de retirer des pions d'une liste de pions
 removePions(L,0,L).
 removePions([_|R],Z,L) :- Z1 is Z-1, removePions(R,Z1,L).
 
+%Predicat qui permet d'ajouter des pions a une liste de pions
 addPions(ListeCaseY,[],ListeCaseY).
 addPions(Liste,[A|R],[A|R2]) :- addPions(Liste,R,R2).
 
-%makeMove(X,Y,Z,L,L2) :- getListCase(X,L,L3), getListCase(Y,L,L6),
-  %getListPions(L3,L4),lookforLadd(L4,Z,Ladd), flatten(Ladd,Lpions), removePionsListCase(L3,Z,L5),
-  %addPions(L6,Lpions,LPions2), setNewList(X,Y,L,L5,[[Y],LPions2],L2), write(L2).
-  %lookforLadd(L4,Z,Ladd), flatten(Ladd,LFin), flatten([LFin|L7],L8),
-  %write(L8), setNewList(X,Y,L,L5,[[Y],L8],L2).
-
-%lookforLadd(_,0,[]).
-% lookforLadd([A|R], Z, [A|L2]) :- Z > 1, Z1 is Z-1, nl,
-% lookforLadd(R,Z1,L2).
-%lookforLadd([A|R], 1, A) :- lookforLadd(R,0,[]).
-
+% Predicat qui permet retrouver les 1, 2 ou 3 premiers pions d'une case
 getPions([_,[A|_]],1,[A]).
 getPions([_,[A,B|_]],2,[A,B]).
 getPions([_,[A,B,C|_]],3,[A,B,C]).
-
-%addPions([_,LP],L3,L4) :- append(L3,LP,L4).
-
-% addPionsListCase2(ListeCaseD, ListeCaseA, Z, ListeAFin) :-
-% getPions(ListeCaseD,Z,ListePions),
-
-% -----------------------------------------------------------------------
-% Predicat qui enleve Z pions d'une liste d'une case et retourne la
-% liste sans les Z pions
-% removePionsListCase(+L,+Z,?L2).
-% L = liste de la case
-% Z = nombre de pions Ã  enlever
-% L2 = nouvelle liste
-% -----------------------------------------------------------------------
-% removePionsListCase(L,Z,L2) :- getListPions(L,L3),
-% removePions(L3,Z,L4), setListCase(L,L4,L2).
-
-% -----------------------------------------------------------------------
-% Predicat qui enleve Z pions a une liste de pions
-% removePions(+L,+Z,?L2).
-% L = liste debut
-% Z = nombre de pions
-% L2 = liste pions fin
-% -----------------------------------------------------------------------
-%removePions(L,0,L).
-%removePions([_|R], Z, L) :- Z > 0, Z1 is Z-1, removePions(R,Z1,L).
-
-% -----------------------------------------------------------------------
-% Predicat qui met a jour le nombre de pions d'une liste correspondant
-% a une case
-% setListCase(+L,+L4,?L2).
-% L = liste case debut
-% L4 = liste pions
-% L2 = nouvelle liste case
-% -----------------------------------------------------------------------
-%setListCase([A,_],L4,[A,L4]).
-
-% -----------------------------------------------------------------------
-% Predicat qui ajoute Z pions a liste d'une case et retourne la liste
-% avec les Z pions en plus
-% addPionsListCase(+L,+Z,?L2,+N).
-% L = liste de la case
-% Z = nombre de pions Ã  ajouter
-% L2 = nouvelle liste avec les pions
-% N = numero du joueur
-% ----------------------------------------------------------------------
-% addPionsListCase(L,Z,L2,N) :- getListPions(L,L3), addPions(L3,Z,L4,N),
-% setListCase(L,L4,L2).
-
-% -----------------------------------------------------------------------
-% Predicat qui ajoute Z pions a une liste de pions
-% addPions(+L,+Z,?L2,+N).
-% L = liste debut
-% Z = nombre de pions
-% L2 = liste pions fin
-% N = numero du joueur
-% -----------------------------------------------------------------------
-%addPions(L,0,L,_).
-%addPions(L, Z, [N|R], N) :- Z > 0, Z1 is Z-1, addPions(L,Z1,R,N).
 
 % -----------------------------------------------------------------------
 % Predicat qui permet de reconstruire le plateau de jeu apres un tour en
@@ -421,6 +343,8 @@ diffCasesPlayer(2,L,X) :- nbPilesPlayer(2,L,Z), nbPilesPlayer(1,L,Y), X is Z-Y.
 % Predicat qui permet de calculer les heuristiques pour le joueur 2 pour
 % chaque état de la liste des états possibles. Renvoie la liste de
 % toutes les heurstiques
+% Cette fonciton represente la fonction d'evaluation du niveau 2,
+% nbPilesCurrentPlayer - nbPilesAdversaire
 % calculateHeurisitics(+N,+LE,?LH)
 % N = numéro du joueur
 % LE = liste des états
@@ -437,106 +361,6 @@ calculateHeuristicsList(N,[L|R],[H|R2]) :- diffCasesPlayer(N,L,H), calculateHeur
 %Prédicat qui renvoie directement l'heuristique de la liste L
 calculateHeuristicSimple(N, L, H) :- diffCasesPlayer(N,L,H).
 
-
-
-
-%minimax(_,[],[]).
-%minimax(N,[L|R],[I|R2]) :- minimax_2(N,L,I,-10), minimax(N,R,R2).
-
-%minimax3(_,[],[]).
-% minimax3(N,[L|R],[I|R2]) :- playerAdv(N,N2),
-% getAllMovesPlayer(N2,L,LH2), minimax4(N,LH2,LH3), flatten(LH3,LH4),
-% listMin(LH4,I), minimax3(N,R,R2).
-
-%minimax4(_,[],[]).
-%minimax4(N,[L|R],[I|R2]) :- minimax5(N,L,I), minimax4(N,R,R2).
-
-%minimax5(_,[],[]).
-% minimax5(N,[L|R],[I|R2]) :- getAllMovesPlayer(N,L,LH2),
-% minimax6(N,LH2,LH3), flatten(LH3,LH4), listMax(LH4,I),
-% minimax5(N,R,R2).
-
-%minimax6(_,[],[]).
-%minimax6(N,[L|R],[I|R2]) :- minimax2(N,L,I), minimax6(N,R,R2).
-
-
-%------------------------------------------------------------------------
-%A voir
-% -----------------------------------------------------------------------
-%getList([L|_],I,L2) :- length(L,A), A >= I, getList2(L,I,L2).
-%getList([L|R],I,L2) :- length(L,A), A < I, I1 = I-A, getList(R,I1,L2).
-%getList2([L|_],0,L).
-%getList2([_|R],I,L2) :- I1 is I-1, getList2(R,I1,L2).
-
-
-
-
-
-% Predicat qui permet d'ajouter un element en premiere position d'une
-% liste
-%addMin(Min,L,[Min|L]).
-
-%Predicat qui retourne le premier element d'une liste
-%firstElement([A|_],A).
-
-%Predicat qui supprime le dernier element d'une liste
-%deleteFirstElement([_|R],R).
-
-getAllMovesPlayerHeuristicsMin(N,L,LH2,Min) :- playerAdv(N,N2), getCasesPlayer(L,LC,N2), getAllMoves3(LC,L,LE,N2,Min), calculateHeuristics(N,LE,LH), flatten(LH,LH2).
-
-
-% getAllMovesFirst([],_,[],_).
-% getAllMovesFirst([C],LP,LE,N) :- getCase(C,LC), numCase(NC,LC),
-% getListPions(C,LP2), numberOfMovablePions(N,LP2,Z),
-% getMovesFromCases(NC,L2,Z), flatten(L2,L),
-% generateAllStates(NC,L,LP,LE,N).%, getAllMovesFirst([],LP,R2,N).
-
-% Predicat qui permet d'avoir tous les mouvement possibles a partir
-% d'une list de case en appliquant minimax + alpha beta
-% getAllMoves([],_,[],_,_).
-% getAllMoves([C|R],LP,[LE|R2],N,Min) :- getCase(C,LC), numCase(NC,LC),
-% getListPions(C,LP2), numberOfMovablePions(N,LP2,Z),
-% getMovesFromCases(NC,L2,Z), flatten(L2,L),
-% ((generateAllStatesMin(NC,L,LP,LE,N,Min), playerAdv(N,N2),
-% calculateHeuristicsList(N2,LE,LH), flatten(LH,LH2), listMin(LH2,Min2),
-% getAllMoves(R,LP,R2,N,Min2)); getAllMoves(R,LP,R2,N,Min)).
-
-getAllMoves3([],_,[],_,_).
-getAllMoves3([C|R],LP,[LE|R2],N,Min) :- getCase(C,LC), numCase(NC,LC), getListPions(C,LP2), numberOfMovablePions(N,LP2,Z), getMovesFromCases(NC,L2,Z), flatten(L2,L), generateAllStatesMin(NC,L,LP,LE,N,Min), getAllMoves3(R,LP,R2,N,Min).
-
-% Predicat qui retourne les etats possibles seulement s'ils ne sont pas
-% inferieur au minimum deja trouve
-generateAllStatesMin(_,[],_,[],_,_).
-generateAllStatesMin(C,[C2|R],LJ,[LJ2|R2],N,Min) :- generateStateMin(C,C2,LJ,LJ2,N,Min), generateAllStatesMin(C,R,LJ,R2,N,Min).
-
-
-%generateAllStatesMin(_,[],_,[],_,_,_).
-% generateAllStatesMin(C,[C2|R],LJ,[LJ2|R2],N,ValeurMin,[H|R3]) :-
-% generateState(C,C2,LJ,LJ2,N), calculateHeuristicSimple(N,LJ2,H),
-% H<ValeurMin, ValeurMin is H,
-% generateAllStatesMin(C,R,LJ,R2,N,ValeurMin,R3).
-% generateAllStatesMin(C,[C2|_],LJ,[LJ2|_],N,ValeurMin,[H|_]) :-
-% generateState(C,C2,LJ,LJ2,N), calculateHeuristicSimple(N,LJ2,H),
-% H>ValeurMin, generateAllStatesMin(C,[],LJ,[],_,_,_).
-
-%generateAllStatesMax(_,[],_,[],_,_,_).
-% generateAllStatesMax(C,[C2|R],LJ,[LJ2|R2],N,ValeurMax,[H|R2]) :-
-% generateState(C,C2,LJ,LJ2,N), calculateHeuristicSimple(N,LJ2,H),
-% H>ValeurMax, ValeurMax is H,
-% generateAllStatesMax(C,R,LJ,R2,N,ValeurMax,R2).
-% generateAllStatesMax(C,[C2|_],LJ,[LJ2|_],N,ValeurMax,[H|_]) :-
-% generateState(C,C2,LJ,LJ2,N), calculateHeuristicSimple(N,LJ2,H),
-% H<ValeurMax, generateAllStatesMax(C,[],LJ,[],_,_,_).
-
-% generateStateMin(C,C2,LJ,LJ2,N,3) :- !, playerAdv(N,N2),
-% transition(C,C2,NP), makeMove(C,C2,NP,LJ,LJ2,N),
-% calculateHeuristicSimple(N2,LJ2,H), H>=4.
-% generateStateMin(C,C2,LJ,LJ2,N,3) :- playerAdv(N,N2),
-% transition(C,C2,NP), makeMove(C,C2,NP,LJ,LJ2,N),
-% calculateHeuristicSimple(N2,LJ2,H), H==3.
-generateStateMin(C,C2,LJ,LJ2,N,Min) :- playerAdv(N,N2), transition(C,C2,NP), makeMove(C,C2,NP,LJ,LJ2), calculateHeuristicSimple(N2,LJ2,H), Min \= 0, H>=Min.
-generateStateMin(C,C2,LJ,LJ2,N,0) :- playerAdv(N,N2), transition(C,C2,NP), makeMove(C,C2,NP,LJ,LJ2), calculateHeuristicSimple(N2,LJ2,H), H>=1.
-
 % -----------------------------------------------------------------------
 % Predicat qui permet de savoir sur quelles cases on peut aller en
 % partant d'une case avec un certain nombre de deplacements N
@@ -548,10 +372,10 @@ generateStateMin(C,C2,LJ,LJ2,N,0) :- playerAdv(N,N2), transition(C,C2,NP), makeM
 getMovesFromCases(X,[L|R],N) :- N>1, findall(Y,transition(X,Y,N),L), N1 is N-1, getMovesFromCases(X,R,N1).
 getMovesFromCases(X,[L],1) :- findall(Y,transition(X,Y,1),L).
 
+%Predicat permettant de savoir si une liste est vide
 vide([]).
 
-premier([A|_],A).
-
+%Predicat permettant de savoir si le joueur 1 a gagne
 player1Win(L):- getListCase(1,L,[_,M]),isControllingCase(M,A),(A\=2;vide(A)),
 getListCase(2,L,[_,N]),isControllingCase(N,B),(B\=2;vide(B)),
 getListCase(3,L,[_,O]),isControllingCase(O,C),(C\=2;vide(C)),
@@ -564,7 +388,7 @@ getListCase(9,L,[_,U]),isControllingCase(U,I),(I\=2;vide(I)),
   printList(L), nl,
 write('Joueur 1 GAGNE !').
 
-
+%Predicat permettant de savoir si le joueur 2 a gagne
 player2Win(L):- getListCase(1,L,[_,M]),isControllingCase(M,A),(A\=1;vide(A)),
 getListCase(2,L,[_,N]),isControllingCase(N,B),(B\=1;vide(B)),
 getListCase(3,L,[_,O]),isControllingCase(O,C),(C\=1;vide(C)),
@@ -577,73 +401,119 @@ getListCase(9,L,[_,U]),isControllingCase(U,I),(I\=1;vide(I)),
   printList(L), nl,
 write('Joueur 2 GAGNE !').
 
-
-
-
-%getList(LE3,R,L2).
-
-% aiPlay(N,L,L2) :- getAllMovesPlayer(N,L,LE), my_flat_list(LE,LE2),
-% minimax(N,LE2,I), flatten(I,I2), write(I2), indexMax(I2,Z,Z2),
-% getList(LE,Z2,L2).
-
-%minimax(_,[],[],_).
- %minimax_2(N,[L|R],[I|R2], Min) :-
- %(getAllMovesPlayerHeuristics(N,L,LH,Min), listMin(LH,I), ((I>Min,
- %minimax_2(N,R,R2,I));minimax_2(N,R,R2,I)); minimax_2(N,R,R2,Min)).
- %minimax(N,[L|R],[I|R2],Min) :- getAllMovesPlayerHeuristics(N,L,LH,Min),
- %!, write(LH), listMin(LH,I), write(I), nl, minimax(N,R,R2,I).
-% minimax(N,[_|R],[-100|R2],Min) :- write("100"), nl,
-% minimax(N,R,R2,Min).
-
-
-antoine() :- getAllMovesPlayer(2,[[[1],[]],[[2],[2,1,1,1,2,2]],[[3],[]],[[4],[]],[[5],[]],[[6],[]],[[7],[]],[[8],[1,2,1,1,2]],[[9],[2]]],LE), my_flat_list(LE,LE2), write(LE2).
-
-
-
-% -----------------------------------------------------------------------
-% LEVEL 1
 % ----------------------------------------------------------------------
+% Predicat qui permet de faire un flatten d'une liste sur un niveau
+% seulement
+% my_flat_list(+L,?L2).
+% L = liste avant flatten
+% L2 = liste avec flatten
 % -----------------------------------------------------------------------
+my_flat_list([], []).
+my_flat_list([A|B],L) :- is_list(A), my_flat_list(B,B1), !, append(A,B1,L).
+my_flat_list([A|B],[A|B1]) :- my_flat_list(B,B1).
+
+%Predicat qui retourne l'index du plus grand nombre de la liste
+indexMax(Zs,Max,Pos) :-
+   maplist(#>=(Max),Zs),
+   nth0(Pos,Zs,Max).
+
+%Predicat qui renvoie le plus grand nombre de la liste L
+listMax([L|R], Max) :- foldl(numMax,R,L,Max).
+numMax(X,Y,Max) :- Max #= max(X,Y).
+
+%Predicat qui renvoie le plus petit nombre de la liste L
+listMin([L|R], Min) :- foldl(numMin, R, L, Min).
+numMin(X, Y, Min) :- Min #= min(X, Y).
+
+
+
+
+% -----------------------------------------------------------------------
+% IA LEVEL 1
+% ----------------------------------------------------------------------
+%-----------------------------------------------------------------------
 % Predicat qui permet de calculer la meilleure solution à jouer pour le
 % niveau 1
-% aiPlay(+N,+L,?L2,+I).
+% aiPlayLvl1(+N,+L,?L2).
 % N = numéro du joueur
 % L = liste plateau de jeu
 % L2 = liste après tour suivant
 % -----------------------------------------------------------------------
-aiPlay(N,L,L2) :- getAllMovesPlayer(N,L,LE), my_flat_list(LE,LE2),
-minimax(N,LE2,I), flatten(I,I2), listMax(I2,Max),
+aiPlayLvl1(N,L,L2) :- getAllMovesPlayer(N,L,LE), my_flat_list(LE,LE2),
+minimaxLvl1(N,LE2,I), flatten(I,I2), listMax(I2,Max),
 deleteBadPlays(LE2,I2,Max,LE3), deleteBadHeuristics(I2,Max,I3), length(I3,A), random(0,A,R), nth0(R,LE3,L2).
 
 % -----------------------------------------------------------------------
-% Predicat qui realise l'algorithme min-max
+% Predicat qui realise l'algorithme min-max pour le niveau 1
 % minimax(+N,+L,?I).
 % N = numero du joueur
 % L = liste d'etats a traiter
 % I = liste des heuristiques minimums correspondant a l'etat de la liste
 % L au meme index
 % -----------------------------------------------------------------------
-minimax(_,[],[]).
-minimax(N,[L|R],[10|R2]) :- calculateHeuristicSimple(N,L,10), !, minimax(N,R,R2).
-minimax(N,[L|R],[-10|R2]) :- calculateHeuristicSimple(N,L,-10), !, minimax(N,R,R2).
-minimax(N,[L|R],[I|R2]) :-
-  getAllMovesPlayerHeuristics(N,L,LH2), listMin(LH2,I),  minimax(N,R,R2).
+minimaxLvl1(_,[],[]).
+minimaxLvl1(N,[L|R],[1000|R2]) :- playerAdv(N,N2), getCasesPlayer(L,[],N2), !, minimaxLvl1(N,R,R2).
+minimaxLvl1(N,[L|R],[-1000|R2]) :- getCasesPlayer(L,[],N), !, minimaxLvl1(N,R,R2).
+minimaxLvl1(N,[L|R],[H|R2]) :-
+  getAllMovesPlayerHeuristicsLvl1(N,L,H),  minimaxLvl1(N,R,R2).
 
 % -----------------------------------------------------------------------
-% Prdicat qui permet de recuperer tous les etats du plateau possibles
-% apres le coup qui va intervenir en integrant minimax avec alpha-beta
-% getAllMovesPlayerHeuristics(+N,+L,?LE).
+% Predicat qui permet de recuperer les heuristiques possible a partir de
+% l'etat passe en parametre, en integrant minimax
+% getAllMovesPlayerHeuristics(+N,+L,?LH).
 % N = numero du joueur
 % L = plateau de jeu
-% LE = liste de tous les etats possibles
-% On cherche d'abord le minimum de toutes les solutions pour un
-% mouvement a partir de l'etat actuel depuis la premiere case que
-% controle le joueur N. On cherche ensuite pour chaque autre case le
-% coup minimum possible en appliquant l'elagage alpha beta : on compare
-% les valeurs trouvees au minimum trouve precedemment, si c'est
-% inferieur on coupe la branche, sinon on la garde
+% LH = liste des heuristiques
+% ----------------------------------------------------------------------
+getAllMovesPlayerHeuristicsLvl1(N,L,H) :- playerAdv(N,N2), getCasesPlayer(L,LC,N2), getAllMoves(LC,L,LE,N2), my_flat_list(LE,LE2), getAllMovesPlayerLvl1(LE2,LH,N), listMin(LH,H).
+
+% Predicat qui retourne tous les etats possibles a partir de l'etat
+% actuel (sans les heuristiques)
+getAllMovesPlayerLvl1([],[],_).
+getAllMovesPlayerLvl1([L|R],[H|R2],N) :- getAllMovesPlayer(N,L,LE), my_flat_list(LE,LE2), length(LE2,H), getAllMovesPlayerLvl1(R,R2,N).
+
+
+
+
+
 % -----------------------------------------------------------------------
-getAllMovesPlayerHeuristics(N,L,LH2) :- playerAdv(N,N2), getCasesPlayer(L,LC,N2), getAllMoves(LC,L,LE,N2), calculateHeuristics(N,LE,LH), flatten(LH,LH2).
+% IA LEVEL 2
+% ----------------------------------------------------------------------
+%-----------------------------------------------------------------------
+% Predicat qui permet de calculer la meilleure solution à jouer pour le
+% niveau 2
+% aiPlayLvl2(+N,+L,?L2).
+% N = numéro du joueur
+% L = liste plateau de jeu
+% L2 = liste après tour suivant
+% -----------------------------------------------------------------------
+aiPlayLvl2(N,L,L2) :- getAllMovesPlayer(N,L,LE), my_flat_list(LE,LE2),
+minimaxLvl2(N,LE2,I), flatten(I,I2), listMax(I2,Max),
+deleteBadPlays(LE2,I2,Max,LE3), deleteBadHeuristics(I2,Max,I3), length(I3,A), random(0,A,R), nth0(R,LE3,L2).
+
+% -----------------------------------------------------------------------
+% Predicat qui realise l'algorithme min-max pour le niveau 2
+% minimax(+N,+L,?I).
+% N = numero du joueur
+% L = liste d'etats a traiter
+% I = liste des heuristiques minimums correspondant a l'etat de la liste
+% L au meme index
+% -----------------------------------------------------------------------
+minimaxLvl2(_,[],[]).
+minimaxLvl2(N,[L|R],[10|R2]) :- calculateHeuristicSimple(N,L,10), !, minimaxLvl2(N,R,R2).
+minimaxLvl2(N,[L|R],[-10|R2]) :- calculateHeuristicSimple(N,L,-10), !, minimaxLvl2(N,R,R2).
+minimaxLvl2(N,[L|R],[I|R2]) :-
+  getAllMovesPlayerHeuristicsLvl2(N,L,LH2), listMin(LH2,I),  minimaxLvl2(N,R,R2).
+
+% -----------------------------------------------------------------------
+% Predicat qui permet de recuperer les heuristiques possible a partir de
+% l'etat passe en parametre, en integrant minimax
+% getAllMovesPlayerHeuristics(+N,+L,?LH).
+% N = numero du joueur
+% L = plateau de jeu
+% LH = liste des heuristiques
+% ----------------------------------------------------------------------
+getAllMovesPlayerHeuristicsLvl2(N,L,LH2) :- playerAdv(N,N2), getCasesPlayer(L,LC,N2), getAllMoves(LC,L,LE,N2), calculateHeuristics(N,LE,LH), flatten(LH,LH2).
 
 % Predicat qui retourne tous les etats possibles a partir de l'etat
 % actuel (sans les heuristiques)
@@ -712,32 +582,73 @@ deleteBadHeuristics([],_,[]).
 deleteBadHeuristics([I|R],Max,L) :- I < Max, deleteBadHeuristics(R,Max,L).
 deleteBadHeuristics([I|R],Max,[I|R2]) :- I >= Max, deleteBadHeuristics(R,Max,R2).
 
-% Meme predicat qui precedemment mais supprime des liste d'etat
+% Meme predicat qui precedemment mais supprime des listes d'etat
 deleteBadPlays([],[],_,[]).
 deleteBadPlays([_|R],[I|R2],Max,LE3) :- I<Max, deleteBadPlays(R,R2,Max,LE3).
 deleteBadPlays([L|R],[I|R2],Max,[L|R3]) :- I>=Max, deleteBadPlays(R,R2,Max,R3).
 
-% ----------------------------------------------------------------------
-% Predicat qui permet de faire un flatten d'une liste sur un niveau
-% seulement
-% my_flat_list(+L,?L2).
-% L = liste avant flatten
-% L2 = liste avec flatten
+
+
+
+
 % -----------------------------------------------------------------------
-my_flat_list([], []).
-my_flat_list([A|B],L) :- is_list(A), my_flat_list(B,B1), !, append(A,B1,L).
-my_flat_list([A|B],[A|B1]) :- my_flat_list(B,B1).
+% IA LEVEL 3
+% ----------------------------------------------------------------------
+%-----------------------------------------------------------------------
+% Predicat qui permet de calculer la meilleure solution à jouer pour le
+% niveau 3
+% aiPlay(+N,+L,?L2).
+% N = numéro du joueur
+% L = liste plateau de jeu
+% L2 = liste après tour suivant
+% -----------------------------------------------------------------------
+aiPlayLvl3(N,L,L2) :- getAllMovesPlayer(N,L,LE), my_flat_list(LE,LE2),
+minimaxLvl3(N,LE2,I), flatten(I,I2), listMax(I2,Max),
+deleteBadPlays(LE2,I2,Max,LE3), deleteBadHeuristics(I2,Max,I3), length(I3,A), random(0,A,R), nth0(R,LE3,L2).
 
-%Predicat qui retourne l'index du plus grand nombre de la liste
-indexMax(Zs,Max,Pos) :-
-   maplist(#>=(Max),Zs),
-   nth0(Pos,Zs,Max).
+% -----------------------------------------------------------------------
+% Predicat qui realise l'algorithme min-max pour le niveau 3
+% minimax(+N,+L,?I).
+% N = numero du joueur
+% L = liste d'etats a traiter
+% I = liste des heuristiques minimums correspondant a l'etat de la liste
+% L au meme index
+% -----------------------------------------------------------------------
+minimaxLvl3(_,[],[]).
+minimaxLvl3(N,[L|R],[1000|R2]) :- functionEval3(L,N,6), !, minimaxLvl3(N,R,R2).
+minimaxLvl3(N,[L|R],[-1000|R2]) :- playerAdv(N,N2), functionEval3(L,N2,6), !, minimaxLvl3(N,R,R2).
+minimaxLvl3(N,[L|R],[H|R2]) :- getAllMovesPlayerHeuristicsLvl3(N,L,H), minimaxLvl3(N,R,R2).
 
-%Predicat qui renvoie le plus grand nombre de la liste L
-listMax([L|R], Max) :- foldl(numMax,R,L,Max).
-numMax(X,Y,Max) :- Max #= max(X,Y).
+% -----------------------------------------------------------------------
+% Predicat qui permet de recuperer les heuristiques possible a partir de
+% l'etat passe en parametre, en integrant minimax
+% getAllMovesPlayerHeuristics(+N,+L,?LH).
+% N = numero du joueur
+% L = plateau de jeu
+% LH = liste des heuristiques
+% ----------------------------------------------------------------------
+getAllMovesPlayerHeuristicsLvl3(N,L,H) :- playerAdv(N,N2), getCasesPlayer(L,LC,N2), getAllMoves(LC,L,LE,N2), my_flat_list(LE,LE2), getAllMovesPlayerLvl3(LE2,LH,N), listMin(LH,H).
 
-%Predicat qui renvoie le plus petit nombre de la liste L
-listMin([L|R], Min) :- foldl(numMin, R, L, Min).
-numMin(X, Y, Min) :- Min #= min(X, Y).
+% Predicat qui retourne tous les etats possibles a partir de l'etat
+% actuel (sans les heuristiques)
+getAllMovesPlayerLvl3([],[],_).
+getAllMovesPlayerLvl3([L|R],[H|R2],N) :- functionEval3(L,N,H), getAllMovesPlayerLvl3(R,R2,N).
 
+% Predicat qui sert de fonction evaluation du niveau 3, retourne le
+% nombre de pions de l'adversaire bloques dans la configuration L
+functionEval3(L,N,H) :- getCasesPlayer(L,LC,N), playerAdv(N,N2), getNbBlockedPions(LC,N2,L2), sumList(L2,H).
+
+% Predicat qui retourne une liste contenant le nombre de pions de
+% l'adversaire bloques pour chaque case que le joueur N controle
+getNbBlockedPions([],_,[]).
+getNbBlockedPions([C|R],N,[H1|R3]) :- getListPions(C,LP), nbPionsBlocked(LP,N,H1), getNbBlockedPions(R,N,R3).
+
+% Predicat qui retourne pour une case le nombre de pions de l'adversaire
+% bloques
+nbPionsBlocked([],_,0).
+nbPionsBlocked([N|R],N,H) :- nbPionsBlocked(R,N,H1), !, H is H1+1.
+nbPionsBlocked([_|R],N,H) :- nbPionsBlocked(R,N,H).
+
+% Predicat qui permet de faire la somme d'une liste
+sumList([],0).
+sumList([A|R],S) :- sumList(R,S2), S is S2+A.
