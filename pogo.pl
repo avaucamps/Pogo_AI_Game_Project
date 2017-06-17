@@ -83,7 +83,7 @@ tourJoueur1(0,L) :- read_start_move(X,L,1,Z), read_end_move(X,L,Z,1,L2), tourJou
 
 tourJoueur2(1,L) :- player2Win(L),!.
 tourJoueur2(1,L) :- printList(L), write("Tour joueur 1 : "), nl, tourJoueur1(0,L).
-tourJoueur2(0,L) :- aiPlayLvl2(2,L,L2), tourJoueur2(1,L2).
+tourJoueur2(0,L) :- aiPlay(2,L,L2), tourJoueur2(1,L2).
 
 %------------------------------------------------------------------------
 % Predicats qui permettent de gerer les tours lors d'un match ia vs
@@ -95,11 +95,11 @@ tourJoueur2(0,L) :- aiPlayLvl2(2,L,L2), tourJoueur2(1,L2).
 % -----------------------------------------------------------------------
 tourJoueur1IA(1,L) :- player1Win(L),!.
 tourJoueur1IA(1,L) :- printList(L), tourJoueur2IA(0,L).
-tourJoueur1IA(0,L) :- write("Tour joueur 1 : "), nl, aiPlayLvl2(1,L,L2), tourJoueur1IA(1,L2).
+tourJoueur1IA(0,L) :- write("Tour joueur 1 : "), nl, aiPlay(1,L,L2), tourJoueur1IA(1,L2).
 
 tourJoueur2IA(1,L) :- player2Win(L),!.
 tourJoueur2IA(1,L) :- printList(L), tourJoueur1IA(0,L).
-tourJoueur2IA(0,L) :- write("Tour joueur 2 : "), nl, aiPlayLvl2(2,L,L2), tourJoueur2IA(1,L2).
+tourJoueur2IA(0,L) :- write("Tour joueur 2 : "), nl, aiPlay(2,L,L2), tourJoueur2IA(1,L2).
 
 % -----------------------------------------------------------------------
 % Predicat qui permet de demander a un joueur quel mouvement il veut
@@ -586,10 +586,6 @@ antoine() :- getAllMovesPlayer(2,[[[1],[]],[[2],[2,1,1,1,2,2]],[[3],[]],[[4],[]]
 % -----------------------------------------------------------------------
 % LEVEL 1
 % ----------------------------------------------------------------------
-
-% -----------------------------------------------------------------------
-% LEVEL 2
-% ----------------------------------------------------------------------
 % -----------------------------------------------------------------------
 % Predicat qui permet de calculer la meilleure solution à jouer pour le
 % niveau 1
@@ -598,8 +594,8 @@ antoine() :- getAllMovesPlayer(2,[[[1],[]],[[2],[2,1,1,1,2,2]],[[3],[]],[[4],[]]
 % L = liste plateau de jeu
 % L2 = liste après tour suivant
 % -----------------------------------------------------------------------
-aiPlayLvl2(N,L,L2) :- getAllMovesPlayer(N,L,LE), my_flat_list(LE,LE2),
-minimaxRound2(N,LE2,I,-10), flatten(I,I2), listMax(I2,Max),
+aiPlay(N,L,L2) :- getAllMovesPlayer(N,L,LE), my_flat_list(LE,LE2),
+minimax(N,LE2,I), flatten(I,I2), listMax(I2,Max),
 deleteBadPlays(LE2,I2,Max,LE3), deleteBadHeuristics(I2,Max,I3), length(I3,A), random(0,A,R), nth0(R,LE3,L2).
 
 % -----------------------------------------------------------------------
@@ -610,24 +606,11 @@ deleteBadPlays(LE2,I2,Max,LE3), deleteBadHeuristics(I2,Max,I3), length(I3,A), ra
 % I = liste des heuristiques minimums correspondant a l'etat de la liste
 % L au meme index
 % -----------------------------------------------------------------------
-minimaxRound2(_,[],[],_).
-minimaxRound2(N,[L|R],[10|R2],Min) :- calculateHeuristicSimple(N,L,10), !, minimaxRound2(N,R,R2,Min).
-minimaxRound2(N,[L|R],[-10|R2],Min) :- calculateHeuristicSimple(N,L,-10), !, minimaxRound2(N,R,R2,Min).
-minimaxRound2(N,[L|R],[I|R2],Min) :-
-  getAllMovesPlayer(N,L,LE), my_flat_list(LE,LE2), minimaxRound3(N,LE2,LH2,Min), listMin(LH2,I), minimaxRound2(N,R,R2,Min).
-
-minimaxRound3(_,[],[],_).
-minimaxRound3(N,[L|R],[10|R2],Min) :- calculateHeuristicSimple(N,L,10), !, minimaxRound3(N,R,R2,Min).
-minimaxRound3(N,[L|R],[-10|R2],Min) :- calculateHeuristicSimple(N,L,-10), !, minimaxRound3(N,R,R2,Min).
-minimaxRound3(N,[L|R],[I|R2],Min) :- getAllMovesPlayer(N,L,LE), my_flat_list(LE,LE2), minimaxRound4(N,LE2,LH2,Min), listMax(LH2,I), minimaxRound3(N,R,R2,Min).
-
-minimaxRound4(_,[],[],_).
-minimaxRound4(N,[L|R],[10|R2],Min) :- calculateHeuristicSimple(N,L,10), !, minimaxRound4(N,R,R2,Min).
-minimaxRound4(N,[L|R],[-10|R2],Min) :- calculateHeuristicSimple(N,L,-10), !, minimaxRound4(N,R,R2,Min).
-minimaxRound4(N,[L|R],[I|R2],Min) :-
-  getAllMovesPlayerHeuristicsMin(N,L,LH2,Min), listMin(LH2,I), minimaxRound4(N,R,R2,Min).
-minimaxRound4(N,[_|R],[-100|R2],Min) :- minimaxRound4(N,R,R2,Min).
-
+minimax(_,[],[]).
+minimax(N,[L|R],[10|R2]) :- calculateHeuristicSimple(N,L,10), !, minimax(N,R,R2).
+minimax(N,[L|R],[-10|R2]) :- calculateHeuristicSimple(N,L,-10), !, minimax(N,R,R2).
+minimax(N,[L|R],[I|R2]) :-
+  getAllMovesPlayerHeuristics(N,L,LH2), listMin(LH2,I),  minimax(N,R,R2).
 
 % -----------------------------------------------------------------------
 % Prdicat qui permet de recuperer tous les etats du plateau possibles
@@ -740,3 +723,4 @@ numMax(X,Y,Max) :- Max #= max(X,Y).
 %Predicat qui renvoie le plus petit nombre de la liste L
 listMin([L|R], Min) :- foldl(numMin, R, L, Min).
 numMin(X, Y, Min) :- Min #= min(X, Y).
+
