@@ -30,7 +30,7 @@ play :-
     nl,
     writeln('***** MENU PRINCIPAL *****'),
     nl,
-    writeln('Veuillez séléctionner le mode de jeu que vous souhaitez.'),
+    writeln('Veuillez sÃ©lÃ©ctionner le mode de jeu que vous souhaitez.'),
     writeln('1. Player vs Player'),
     writeln('2. Player vs IA'),
     writeln('3. IA vs IA'),
@@ -40,7 +40,7 @@ play :-
     read(X),
     game_mode(X).
 
-game_mode(1) :- writeln('** Numérotation des cases **'),
+game_mode(1) :- writeln('** NumÃ©rotation des cases **'),
 	writeln('-------------'),
 	writeln('| 1 , 2 , 3 |'),
 	writeln('| 4 , 5 , 6 |'),
@@ -61,7 +61,7 @@ game_mode(_) :-
 playervsia :-
     repeat,
     nl,
-    writeln('** Sélection de la difficulté **'),
+    writeln('** SÃ©lection de la difficultÃ© **'),
     nl,
     writeln('1. Niveau 1'),
     writeln('2. Niveau 2'),
@@ -72,38 +72,38 @@ playervsia :-
     read(X),
     modeia(X).
 
-modeia(1):-writeln('** Numérotation des cases **'),
+modeia(1):-writeln('** NumÃ©rotation des cases **'),
 	writeln('-------------'),
 	writeln('| 1 , 2 , 3 |'),
 	writeln('| 4 , 5 , 6 |'),
 	writeln('| 7 , 8 , 9 |'),
 	writeln('-------------'),
 	writeln('****************************'),
-        pogo(1,1). %difficulté 1
-modeia(2):-writeln('** Numérotation des cases **'),
+        pogo(1,1). %difficultÃ© 1
+modeia(2):-writeln('** NumÃ©rotation des cases **'),
 	writeln('-------------'),
 	writeln('| 1 , 2 , 3 |'),
 	writeln('| 4 , 5 , 6 |'),
 	writeln('| 7 , 8 , 9 |'),
 	writeln('-------------'),
 	writeln('****************************'),
-        pogo(1,2). %difficulté 2
-modeia(3):-writeln('** Numérotation des cases **'),
+        pogo(1,2). %difficultÃ© 2
+modeia(3):-writeln('** NumÃ©rotation des cases **'),
 	writeln('-------------'),
 	writeln('| 1 , 2 , 3 |'),
 	writeln('| 4 , 5 , 6 |'),
 	writeln('| 7 , 8 , 9 |'),
 	writeln('-------------'),
 	writeln('****************************'),
-        pogo(1,3). %difficulté 3
+        pogo(1,3). %difficultÃ© 3
 modeia(4):-play.    %Retour menu principal
 
-%choix de la difficulté de IA1
+%choix de la difficultÃ© de IA1
 
 iavsia :-
     repeat,
     nl,
-    writeln('******* Difficulté de IA1 *******'),
+    writeln('******* DifficultÃ© de IA1 *******'),
     nl,
     writeln('1. Niveau 1'),
     writeln('2. Niveau 2'),
@@ -114,17 +114,17 @@ iavsia :-
     read(X),
     modeia2(X).
 
-modeia2(1):-iavsia2(1). %difficulté 1
-modeia2(2):-iavsia2(2). %difficulté 2
-modeia2(3):-iavsia2(3). %difficulté 3
+modeia2(1):-iavsia2(1). %difficultÃ© 1
+modeia2(2):-iavsia2(2). %difficultÃ© 2
+modeia2(3):-iavsia2(3). %difficultÃ© 3
 modeia2(4):-play.    %Retour menu principal
 
-%choix de la difficulté de IA2
+%choix de la difficultÃ© de IA2
 
 iavsia2(N1) :-
     repeat,
     nl,
-    writeln('******* Difficulté de IA2 *******'),
+    writeln('******* DifficultÃ© de IA2 *******'),
     nl,
     writeln('1. Niveau 1'),
     writeln('2. Niveau 2'),
@@ -133,4 +133,7 @@ iavsia2(N1) :-
     nl,
     writeln('*********************************'),
     read(X),
-    pogoiaia(2,N1,X).
+    modeia3(2,N1,X).
+
+modeia3(2,_,4) :- play.
+modeia3(2,N1,X) :- pogoiaia(2,N1,X).
