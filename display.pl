@@ -23,3 +23,31 @@ afficheLigne3(L):- getListCase(7,L,[_,X]),write(X),write(' | '),
 % -----------------------------------------------------------------------
 print_nbMoves(Z2) :- Z2 > 1, write("Vous pouvez effectuer de 1 a "),write(Z2),write(" deplacements.").
 print_nbMoves(_) :- write("Vous pouvez effectuer 1 deplacement.").
+
+
+play :-
+    repeat,
+    nl,
+    writeln('********** MENU **********'),
+    nl,
+    writeln('Veuillez séléctionner le mode de jeu que vous souhaitez.'),
+    writeln('1. Player vs Player'),
+    writeln('2. Player vs IA ( godmode )'),
+    writeln('3. IA vs IA'),
+    writeln('4. Exit'),
+    nl,
+    writeln('**************************'),
+    read(X),
+    writeln(X),
+    mode(X).
+
+mode(1) :-pogo(0).
+
+mode(2) :- pogo(1).
+
+mode(3) :-pogo(2).
+
+mode(4) :-writeln('sortie').
+
+mode(_) :-
+    writeln('erreur de saisie'), fail.

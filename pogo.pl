@@ -5,11 +5,12 @@
 :- consult('transitions.pl').
 :- consult(display).
 
-
+%Jeu utilisateur1 vs utilisateur2
+pogo(0) :- start_game_pvp.
 %Jeu utilisateur vs IA
-pogo(1) :- start_game().
+pogo(1) :- start_game.
 %Jeu IA vs IA
-pogo(2) :- start_game_ia().
+pogo(2) :- start_game_ia.
 
 %------------------------------------------------------------------------
 % Predicat qui fait commencer la partie en creant le plateau de jeu
@@ -17,17 +18,19 @@ pogo(2) :- start_game_ia().
 % start_game(?L).
 % L = plateau de jeu
 % -----------------------------------------------------------------------
-start_game() :- create_list(1,L), printList(L), tourJoueur1(0,L).
+start_game :- create_list(1,L), printList(L), tourJoueur1(0,L).
 
 % Predicat similaire au precedent permettant de demarrer une partie ia
 % contre ia
-start_game_ia() :- create_list(1,L), printList(L), tourJoueur1IA(0,L).
+start_game_ia :- create_list(1,L), printList(L), tourJoueur1IA(0,L).
+
+% Predicat similaire aux precedents permettant de demarrer une partie
+% player vs player
+start_game_pvp :- create_list(1,L), printList(L), tourJoueur1PVP(0,L).
 
 % -----------------------------------------------------------------------
 % Predicat qui permet de savoir quel est le joueur adverse
-% playerAdv(+N,?N1).
-% N = numéro du joueur
-% N1 = numéro du joueur adverse
+% playerAdv(+N,?N1). N = numéro du joueur N1 = numéro du joueur adverse
 % -----------------------------------------------------------------------
 playerAdv(1,2).
 playerAdv(2,1).
@@ -71,19 +74,35 @@ addPionsStart(_,[]).
 
 %------------------------------------------------------------------------
 % Predicats qui permettent de gerer les tours lors d'un match joueur vs
+% un autre de joueur
+% tourJoueur(+N,+L).
+% N = etat du tour -> 0 si pas termine
+%                  -> 1 si termine
+% L = liste representant le plateau de jeu
+% -----------------------------------------------------------------------
+tourJoueur1PVP(1,L) :- player1Win(L),!, nl, play.
+tourJoueur1PVP(1,L) :- printList(L), tourJoueur2PVP(0,L).
+tourJoueur1PVP(0,L) :- write("Tour joueur 1 : "), nl, read_start_move(X,L,1), read_end_move(X,L,L2), tourJoueur1PVP(1,L2).
+
+tourJoueur2PVP(1,L) :- player2Win(L),!, nl, play.
+tourJoueur2PVP(1,L) :- printList(L), tourJoueur1PVP(0,L).
+tourJoueur2PVP(0,L) :- write("Tour joueur 2 : "), nl, read_start_move(X,L,2), read_end_move(X,L,L2), tourJoueur2PVP(1,L2).
+
+%------------------------------------------------------------------------
+% Predicats qui permettent de gerer les tours lors d'un match joueur vs
 % IA
 % tourJoueur(+N,+L).
 % N = etat du tour -> 0 si pas termine
 %                  -> 1 si termine
 % L = liste representant le plateau de jeu
 % -----------------------------------------------------------------------
-tourJoueur1(1,L) :- player1Win(L),!.
-tourJoueur1(1,L) :- printList(L), write("Tour joueur 2 : "), nl, tourJoueur2(0,L).
-tourJoueur1(0,L) :- read_start_move(X,L,1,Z), read_end_move(X,L,Z,1,L2), tourJoueur1(1,L2).
+tourJoueur1(1,L) :- player1Win(L),!, nl, play.
+tourJoueur1(1,L) :- printList(L), tourJoueur2(0,L).
+tourJoueur1(0,L) :- write("Tour joueur 1 : "), nl, read_start_move(X,L,1), read_end_move(X,L,L2), tourJoueur1(1,L2).
 
-tourJoueur2(1,L) :- player2Win(L),!.
-tourJoueur2(1,L) :- printList(L), write("Tour joueur 1 : "), nl, tourJoueur1(0,L).
-tourJoueur2(0,L) :- aiPlay(2,L,L2), tourJoueur2(1,L2).
+tourJoueur2(1,L) :- player2Win(L),!, nl, play.
+tourJoueur2(1,L) :- printList(L), tourJoueur1(0,L).
+tourJoueur2(0,L) :- write("Tour joueur 2 : "), nl, aiPlay(2,L,L2), tourJoueur2(1,L2).
 
 %------------------------------------------------------------------------
 % Predicats qui permettent de gerer les tours lors d'un match ia vs
@@ -93,11 +112,11 @@ tourJoueur2(0,L) :- aiPlay(2,L,L2), tourJoueur2(1,L2).
 %                  -> 1 si termine
 % L = liste representant le plateau de jeu
 % -----------------------------------------------------------------------
-tourJoueur1IA(1,L) :- player1Win(L),!.
+tourJoueur1IA(1,L) :- player1Win(L),!, nl, play.
 tourJoueur1IA(1,L) :- printList(L), tourJoueur2IA(0,L).
 tourJoueur1IA(0,L) :- write("Tour joueur 1 : "), nl, aiPlay(1,L,L2), tourJoueur1IA(1,L2).
 
-tourJoueur2IA(1,L) :- player2Win(L),!.
+tourJoueur2IA(1,L) :- player2Win(L),!, nl, play.
 tourJoueur2IA(1,L) :- printList(L), tourJoueur1IA(0,L).
 tourJoueur2IA(0,L) :- write("Tour joueur 2 : "), nl, aiPlay(2,L,L2), tourJoueur2IA(1,L2).
 
@@ -110,7 +129,7 @@ tourJoueur2IA(0,L) :- write("Tour joueur 2 : "), nl, aiPlay(2,L,L2), tourJoueur2
 % N = numero du joueur
 % Z = nombre de pieces que le joueur peut bouger
 % -----------------------------------------------------------------------
-read_start_move(X,L,N,Z2) :-
+read_start_move(X,L,N) :-
   %isCase(X),
   askCase(L,N,X),
   infosMove(X,L,N,Z2),
@@ -142,16 +161,13 @@ askCase(L,N,X):-
 % Z2 = nombre de deplacements effectues
 % L2 = plateau de jeu a la fin du tour
 % -----------------------------------------------------------------------
-read_end_move(X,L,Z,N,L2) :-
+read_end_move(X,L,L2) :-
   write('Entrez le numero de la case dans laquelle vous voulez aller:'),
   nl,
   read(Y),
-  %Pour avoir le nombre de pions Ã  bouger on prend ce que renvoie le compteur dans checkMove
-  checkMove(X,Y,Z,Z2),
-  %Et on rajoute 1
-  Z3 is Z2+1,
-  normalize(Z3,Z4),
-  makeMove(X,Y,Z4,L,L2).
+  %Pour avoir le nombre de pions a  bouger on prend ce que renvoie le predicat transition
+  transition(X,Y,Z2),
+  makeMove(X,Y,Z2,L,L2).
   %isCase(X).
 
 %------------------------------------------------------------------------
@@ -241,10 +257,11 @@ normalize(_,3).
 % Z2 = compteur de deplacements dont la valeur est le nombre de
 % deplacements -1
 % -----------------------------------------------------------------------
-checkMove(X,Y,_,0) :- isNeighbor(X,L),member(Y,L).
-checkMove(X,Y,Z,Z2) :- Z>0, Z1 is Z-1, isNeighbor(X,L),member(A,L),checkMove(A,Y,Z1,Z3), Z2 is Z3+1.
-%checkMove(_,_,Z,_):- Z==0, write('C cassee').
-
+%checkMove(X,Y,_,0) :- isNeighbor(X,L),member(Y,L).
+% checkMove(X,Y,Z,Z2) :- Z>0, Z1 is Z-1,
+% isNeighbor(X,L),member(A,L),checkMove(A,Y,Z1,Z3), Z2 is Z3+1.
+% checkMove(_,_,Z,_):- Z==0, write('C cassee').
+checkMove(X,Y,Z) :- transition(X,Y,Z).
 
 % -----------------------------------------------------------------------
 % Predicat qui permet d'executer un deplacement
